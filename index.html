@@ -286,8 +286,11 @@
         <h2>Get sync first, at beta pricing.</h2>
         <p>We'll email you once when sync is ready. No newsletter.</p>
       </div>
-      <!-- Paste your Formspree endpoint into action="" (see PUBLISH.md). Empty action = local thank-you only. -->
-      <form class="lead" id="lead" action="" method="POST">
+      <!-- Submissions are relayed by FormSubmit to the owner's inbox. The action uses FormSubmit's alias, not the address. -->
+      <form class="lead" id="lead" action="https://formsubmit.co/ajax/a31453b1dc8c84718be297694be344b1" method="POST">
+        <input type="hidden" name="_subject" value="Tablenote early access sign-up">
+        <input type="hidden" name="_template" value="table">
+        <input type="text" name="_honey" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0">
         <p class="chosen" id="lead-chosen" hidden></p>
         <label for="lead-email">Email
           <input type="email" id="lead-email" name="email" autocomplete="email" placeholder="you@yourpractice.com" required>
@@ -434,10 +437,14 @@
       document.getElementById('lead-submit').disabled = true;
       track('lead-submit');
     };
-    if (!action) { done(); return; }
+    if (!action || !live) { done(); return; }
+    var submit = document.getElementById('lead-submit');
+    submit.disabled = true;
     fetch(action, { method: 'POST', body: new FormData(form), headers: { Accept: 'application/json' } })
-      .then(function (r) { if (r.ok) done(); else throw new Error('status ' + r.status); })
+      .then(function (r) { return r.json(); })
+      .then(function (j) { if (String(j.success) === 'true') done(); else throw new Error(j.message || 'rejected'); })
       .catch(function () {
+        submit.disabled = false;
         thanks.textContent = "That didn't go through. Check your connection and try again.";
         thanks.hidden = false;
       });
