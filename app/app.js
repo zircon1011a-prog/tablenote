@@ -328,6 +328,7 @@
       (ui.pendingRestore ? '<div class="notice warn"><p>Replace ' + plural(db.clients.length, 'client') + ' and ' + plural(db.notes.length, 'note') + ' on this device with ' + plural(ui.pendingRestore.clients.length, 'client') + ' and ' + plural(ui.pendingRestore.notes.length, 'note') + ' from the file?</p><div class="row"><button class="btn small" data-action="restore-confirm">Replace data</button><button class="btn small quiet" data-action="restore-cancel">Keep current data</button></div></div>' : '') +
       '<p class="hint" id="restore-msg" role="status"></p></section>';
     h += '<section class="panel"><h2>Delete everything</h2><p>Removes all clients and notes from this device. Download a backup first if you might need them.</p><div><button class="btn small danger" data-action="wipe">Delete all data</button></div></section>';
+    h += '<p class="hint"><a href="../privacy.html">Privacy Policy</a> · <a href="../terms.html">Terms of Use</a></p>';
     view.innerHTML = h;
   }
 
