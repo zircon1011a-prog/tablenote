@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Tablenote</title>
+<meta name="description" content="SOAP notes and body chart for solo massage therapists. Notes are stored on this device.">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#f2f3ef" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#12141b" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Tablenote">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="../assets/icon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="../assets/brand.css">
+<link rel="stylesheet" href="app.css">
+<!-- No analytics on this page: it holds client health notes. -->
+</head>
+<body>
+<header class="bar">
+  <div class="bar-in">
+    <a class="wordmark" href="#/" aria-label="Tablenote, all clients">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="4.6" rx="3.6" ry="2.6" fill="var(--accent)"/><rect x="5.5" y="9" width="13" height="13.5" rx="3" fill="none" stroke="var(--ink)" stroke-width="2"/><path d="M8.5 13.5h7M8.5 17h4.5" stroke="var(--ink)" stroke-width="1.6" stroke-linecap="round"/></svg>
+      Tablenote
+    </a>
+    <div class="bar-right">
+      <span class="save-state" id="save-state" role="status"><span>Saved on this device</span></span>
+      <a class="btn small quiet" href="#/data">Export</a>
+    </div>
+  </div>
+</header>
+<main class="view" id="view"></main>
+<script src="../assets/bodychart.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

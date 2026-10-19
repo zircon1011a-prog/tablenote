@@ -1,0 +1,448 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Tablenote — SOAP notes for solo massage therapists</title>
+<meta name="description" content="SOAP notes for massage therapists, on your phone. Tap a front-and-back body chart, and export every record as PDF or CSV anytime. $9/month, no lock-in.">
+<meta property="og:title" content="Tablenote — SOAP notes for solo massage therapists">
+<meta property="og:description" content="Charting and nothing else. Mobile SOAP notes, a body chart you tap, and a full export whenever you want.">
+<link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="assets/brand.css">
+<!-- Visit counting (optional): paste the GoatCounter snippet from PUBLISH.md here. Landing page only, never inside /app. -->
+<style>
+  .wrap { max-width: 1120px; margin: 0 auto; padding-left: var(--gutter-l); padding-right: var(--gutter-r); }
+
+  .top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: color-mix(in srgb, var(--paper) 92%, transparent); backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); }
+  .top .wrap { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-block: 12px; }
+  .top nav { display: flex; align-items: center; gap: 20px; }
+  .top nav a:not(.btn) { color: var(--ink-2); text-decoration: none; font-size: 15px; }
+  .top nav a:not(.btn):hover { color: var(--ink); }
+  @media (max-width: 720px) { .top nav a:not(.btn) { display: none; } }
+
+  .hero .wrap { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); gap: 48px; align-items: center; padding-block: 64px 72px; }
+  @media (max-width: 900px) { .hero .wrap { grid-template-columns: minmax(0, 1fr); gap: 36px; padding-block: 40px 56px; } }
+  .hero h1 { font-size: clamp(40px, 6.4vw, 76px); line-height: 0.98; font-weight: 800; letter-spacing: -0.035em; margin-top: 14px; }
+  .hero h1 em { font-style: normal; color: var(--accent); }
+  .hero .sub { font-size: 19px; color: var(--ink-2); max-width: 34em; margin: 22px 0 0; }
+  .cta-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 28px; }
+  .fine { font-size: 14px; color: var(--ink-2); margin: 14px 0 0; display: flex; gap: 8px; align-items: flex-start; }
+  .fine svg { flex: 0 0 auto; margin-top: 3px; }
+
+  /* The demo card reads like a paper chart form */
+  .chart-form { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; box-shadow: 0 1px 0 var(--line), 0 18px 40px -24px color-mix(in srgb, var(--accent) 45%, transparent); overflow: hidden; }
+  .cf-head { display: grid; grid-template-columns: repeat(4, minmax(0, auto)); justify-content: space-between; gap: 6px 14px; padding: 14px 18px; border-bottom: 1px solid var(--line); }
+  @media (max-width: 480px) { .cf-head { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  .cf-head div { min-width: 0; }
+  .cf-head b { display: block; font-size: 15px; font-weight: 700; margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .cf-chart { padding: 14px 18px 6px; }
+  .cf-chart .bodychart { width: 100%; height: auto; display: block; max-height: 420px; cursor: crosshair; touch-action: manipulation; }
+  .cf-tools { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; padding: 0 18px 8px; }
+  .cf-hint { font-size: 13px; color: var(--ink-2); margin: 0; padding: 0 18px 10px; }
+  .cf-marks { list-style: none; margin: 0; padding: 10px 18px 14px; border-top: 1px dashed var(--line); display: flex; flex-wrap: wrap; gap: 6px 14px; min-height: 44px; font-size: 14px; }
+  .cf-marks li { display: inline-flex; align-items: center; gap: 6px; }
+  .cf-marks svg { width: 13px; height: 13px; }
+  .cf-soap { border-top: 1px solid var(--line); }
+  .cf-row { display: grid; grid-template-columns: 34px minmax(0, 1fr); border-top: 1px solid var(--line); }
+  .cf-row:first-child { border-top: 0; }
+  .cf-row .k { font: 500 13px/1 var(--f-mono); color: var(--accent); display: grid; place-items: center; border-right: 1px solid var(--line); }
+  .cf-row p { margin: 0; padding: 9px 14px; font-size: 14.5px; line-height: 1.45; }
+  .tag { display: inline-block; font: 500 11px/1 var(--f-mono); letter-spacing: 0.06em; text-transform: uppercase; padding: 4px 6px; border-radius: 4px; background: var(--accent-soft); color: var(--accent); }
+
+  section.band { border-top: 1px solid var(--line); scroll-margin-top: 64px; }
+  section.band > .wrap { padding-block: 72px; }
+  @media (max-width: 720px) { section.band > .wrap { padding-block: 52px; } }
+  .sec-head { display: grid; gap: 12px; max-width: 46em; margin-bottom: 36px; }
+  .sec-head h2 { font-size: clamp(30px, 4vw, 44px); line-height: 1.05; font-weight: 750; }
+  .sec-head p { margin: 0; color: var(--ink-2); font-size: 18px; }
+  .sec-head.flush { margin-bottom: 0; }
+
+  .three { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0; border-top: 2px solid var(--ink); }
+  .three article { padding: 22px 24px 8px 0; display: grid; gap: 10px; align-content: start; }
+  .three article + article { padding-left: 24px; border-left: 1px solid var(--line); }
+  @media (max-width: 860px) {
+    .three { grid-template-columns: minmax(0, 1fr); }
+    .three article, .three article + article { padding: 22px 0; border-left: 0; border-top: 1px solid var(--line); }
+    .three article:first-child { border-top: 0; }
+  }
+  .three h3 { font-size: 23px; line-height: 1.15; font-weight: 700; }
+  .three p { margin: 0; color: var(--ink-2); }
+  .quote { padding-top: 10px; border-top: 1px dashed var(--line); font-size: 14px; }
+  .quote b { color: var(--ink); font-weight: 700; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chips span { font-size: 13px; padding: 5px 9px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); }
+  .regions { font: 400 13px/1.7 var(--f-mono); color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; }
+  .files { display: grid; gap: 6px; }
+  .files div { display: flex; justify-content: space-between; gap: 10px; font: 400 13px/1.3 var(--f-mono); background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 9px 12px; min-width: 0; }
+  .files div span:first-child { overflow-wrap: anywhere; }
+  .files div span:last-child { color: var(--ink-2); white-space: nowrap; }
+
+  .split { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 40px; align-items: start; }
+  @media (max-width: 860px) { .split { grid-template-columns: minmax(0, 1fr); gap: 24px; } }
+  .not { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line); }
+  .not li { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 14px 0; border-bottom: 1px solid var(--line); font-size: 18px; }
+  .not li s { text-decoration-thickness: 1.5px; color: var(--ink-2); }
+  .not li span { font: 500 12px/1.6 var(--f-mono); color: var(--ink-2); text-transform: uppercase; letter-spacing: 0.06em; text-align: right; }
+  .not li.yes { font-weight: 700; }
+  .not li.yes span { color: var(--accent); }
+
+  .data { margin: 0; border-top: 1px solid var(--line); }
+  .data > div { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 16px; padding: 14px 0; border-bottom: 1px solid var(--line); }
+  @media (max-width: 480px) { .data > div { grid-template-columns: minmax(0, 1fr); gap: 4px; } }
+  .data dt { padding-top: 4px; }
+  .data dd { margin: 0; }
+
+  .plans { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+  @media (max-width: 860px) { .plans { grid-template-columns: minmax(0, 1fr); } }
+  .plan { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 22px; display: grid; grid-template-rows: auto auto 1fr auto; gap: 12px; }
+  .plan.main { border: 2px solid var(--accent); }
+  .plan .price { font: 800 44px/1 var(--f-display); letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
+  .plan .price small { font: 400 16px/1 var(--f-body); color: var(--ink-2); letter-spacing: 0; }
+  .plan ul { margin: 0; padding-left: 18px; color: var(--ink-2); display: grid; gap: 4px; align-content: start; }
+  .plan .btn { width: 100%; }
+  .after-plans { color: var(--ink-2); font-size: 15px; margin: 18px 0 0; }
+
+  form.lead { display: grid; gap: 14px; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 22px; }
+  form.lead label { display: grid; gap: 6px; font-weight: 700; font-size: 15px; }
+  form.lead input, form.lead select { min-height: 48px; padding: 0 14px; border-radius: 8px; border: 1px solid var(--line); background: var(--paper); color: var(--ink); font: 400 16px var(--f-body); width: 100%; }
+  .ask { border: 0; margin: 0; padding: 0; display: grid; gap: 8px; min-width: 0; }
+  .ask legend { font-weight: 700; font-size: 15px; padding: 0; margin-bottom: 6px; }
+  form.lead .ask label { display: flex; align-items: center; gap: 10px; font-weight: 400; min-height: 44px; padding: 8px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--paper); cursor: pointer; }
+  form.lead .ask label:has(input:checked) { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+  form.lead .ask input { flex: 0 0 auto; width: 18px; height: 18px; min-height: 0; padding: 0; margin: 0; accent-color: var(--accent); }
+  .chosen { font-size: 15px; color: var(--accent); font-weight: 700; margin: 0; }
+  .thanks { margin: 0; padding: 12px 14px; border-radius: 8px; background: var(--accent-soft); color: var(--ink); font-weight: 700; }
+
+  .faq details { border-top: 1px solid var(--line); }
+  .faq details:last-of-type { border-bottom: 1px solid var(--line); }
+  .faq summary { cursor: pointer; list-style: none; padding: 18px 36px 18px 0; font: 700 19px/1.3 var(--f-display); position: relative; }
+  .faq summary::-webkit-details-marker { display: none; }
+  .faq summary::after { content: "+"; position: absolute; right: 4px; top: 16px; font: 400 24px/1 var(--f-mono); color: var(--ink-2); }
+  .faq details[open] summary::after { content: "−"; }
+  .faq details p { margin: 0 0 20px; color: var(--ink-2); max-width: 42em; }
+
+  footer { border-top: 1px solid var(--line); }
+  footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; justify-content: space-between; align-items: center; padding-block: 28px 40px; color: var(--ink-2); font-size: 14px; }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <a class="wordmark" href="#top" aria-label="Tablenote home">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="4.6" rx="3.6" ry="2.6" fill="var(--accent)"/><rect x="5.5" y="9" width="13" height="13.5" rx="3" fill="none" stroke="var(--ink)" stroke-width="2"/><path d="M8.5 13.5h7M8.5 17h4.5" stroke="var(--ink)" stroke-width="1.6" stroke-linecap="round"/></svg>
+      Tablenote
+    </a>
+    <nav aria-label="Main">
+      <a href="#how">How it works</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#faq">FAQ</a>
+      <a class="btn small" href="app/" data-track="nav-open-app">Open the app</a>
+    </nav>
+  </div>
+</header>
+
+<main id="top">
+  <section class="hero">
+    <div class="wrap">
+      <div>
+        <span class="label">For solo massage therapists &amp; bodyworkers</span>
+        <h1>SOAP notes, done <em>before your next client.</em></h1>
+        <p class="sub">Tablenote is charting and nothing else. Write SOAP notes on your phone, tap a front-and-back body chart, and export every record whenever you want. Keep the booking app you already use.</p>
+        <div class="cta-row">
+          <a class="btn" href="app/" data-track="hero-try-app">Try it free, no signup</a>
+          <a class="btn ghost" href="#pricing" data-track="hero-pricing">See pricing</a>
+        </div>
+        <p class="fine"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><rect x="3" y="7" width="10" height="7" rx="1.5" fill="none" stroke="var(--ink-2)" stroke-width="1.5"/><path d="M5.5 7V5a2.5 2.5 0 0 1 5 0v2" fill="none" stroke="var(--ink-2)" stroke-width="1.5"/></svg>During the beta your notes stay on your device. Nothing is sent to our servers.</p>
+      </div>
+
+      <div class="chart-form" aria-label="Interactive example of a Tablenote SOAP note">
+        <div class="cf-head">
+          <div><span class="label">Client</span><b>Jordan L.</b></div>
+          <div><span class="label">Date</span><b>Oct 14</b></div>
+          <div><span class="label">Session</span><b>60 min</b></div>
+          <div><span class="label">Modality</span><b>Deep tissue</b></div>
+        </div>
+        <div class="cf-chart" id="demo-chart"></div>
+        <div class="cf-tools">
+          <div class="legend" role="group" aria-label="Mark type" id="demo-legend"></div>
+          <span class="tag">Try it</span>
+        </div>
+        <p class="cf-hint">Tap the figure to add a mark. Tap a mark to remove it.</p>
+        <ul class="cf-marks" id="demo-marks" aria-live="polite"></ul>
+        <div class="cf-soap">
+          <div class="cf-row"><span class="k">S</span><p>Stiff neck on waking, worse after desk work. Pain 6/10.</p></div>
+          <div class="cf-row"><span class="k">O</span><p>Hypertonicity in bilateral upper trapezius; trigger point R rhomboids.</p></div>
+          <div class="cf-row"><span class="k">A</span><p>Tissue responded well. Pain 3/10 after session.</p></div>
+          <div class="cf-row"><span class="k">P</span><p>Return in 2 weeks. Home stretch: upper trap, 3 × 30 s daily.</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="band" id="how">
+    <div class="wrap">
+      <div class="sec-head">
+        <span class="label">How it works</span>
+        <h2>Three things your practice suite does badly.</h2>
+        <p>Most massage software is a booking and payments platform with SOAP notes added on. Tablenote starts from the note.</p>
+      </div>
+      <div class="three">
+        <article>
+          <span class="label">Mobile</span>
+          <h3>Write it on your phone, between sessions.</h3>
+          <p>Tap common phrases instead of typing, and every change saves as you go. Five minutes between clients is enough.</p>
+          <div class="chips" aria-label="Example quick phrases"><span>Hypertonicity</span><span>Limited ROM</span><span>Trigger point</span><span>Return in 2 weeks</span></div>
+          <p class="quote">The complaint we heard most: <b>“you have to have a computer.”</b></p>
+        </article>
+        <article>
+          <span class="label">Body chart</span>
+          <h3>A body chart that knows anatomy.</h3>
+          <p>Tap the anterior or posterior figure and Tablenote names the region, using the client's left and right. Mark pain, tension, and areas to avoid.</p>
+          <div class="regions">pain: L upper trapezius<br>tension: R quadratus lumborum<br>avoid: L popliteal fossa</div>
+          <p class="quote">What other apps offer: <b>“the ability to import pictures.”</b></p>
+        </article>
+        <article>
+          <span class="label">Export</span>
+          <h3>Your records leave when you do.</h3>
+          <p>Save any visit as a PDF. Download every note as a spreadsheet or a full backup file, at any time, at no cost.</p>
+          <div class="files"><div><span>jordan-lee-2026-10-14.pdf</span><span>1 visit</span></div><div><span>tablenote-notes.csv</span><span>all notes</span></div><div><span>tablenote-backup.json</span><span>everything</span></div></div>
+          <p class="quote">What therapists fear most: <b>“holds your data hostage.”</b></p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="band">
+    <div class="wrap split">
+      <div class="sec-head flush">
+        <span class="label">What it leaves out</span>
+        <h2>Keep your booking app. Tablenote only charts.</h2>
+        <p>All-in-one suites often cost $49 to $119 a month because they bundle tools you may already have. If your scheduling works, you only need the notes.</p>
+      </div>
+      <ul class="not">
+        <li><s>Booking &amp; calendar</s><span>Keep yours</span></li>
+        <li><s>Card payments</s><span>Keep your POS</span></li>
+        <li><s>Marketing emails</s><span>Not included</span></li>
+        <li><s>Insurance billing</s><span>Not included</span></li>
+        <li class="yes">SOAP notes, body chart, health history, export<span>Included</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="band">
+    <div class="wrap split">
+      <div class="sec-head flush">
+        <span class="label">Where your notes live</span>
+        <h2>Your notes stay with you.</h2>
+        <p>During the beta, Tablenote saves notes in your browser on your own device. We never receive them, so we can't lose or leak them.</p>
+      </div>
+      <dl class="data">
+        <div><dt class="label">Beta</dt><dd>Stored on this device only. Download a backup each week, since clearing your browser data removes notes.</dd></div>
+        <div><dt class="label">Next</dt><dd>Sync between phone and laptop, on HIPAA-eligible infrastructure, with a Business Associate Agreement available.</dd></div>
+        <div><dt class="label">Always</dt><dd>Full export of every record on every plan, including after you cancel.</dd></div>
+      </dl>
+    </div>
+  </section>
+
+  <section class="band" id="pricing">
+    <div class="wrap">
+      <div class="sec-head">
+        <span class="label">Pricing</span>
+        <h2>One price. Unlimited clients.</h2>
+        <p>The beta is free. Pick the plan you'd choose at launch and we'll hold that price for you.</p>
+      </div>
+      <div class="plans">
+        <div class="plan">
+          <span class="label">Solo, yearly</span>
+          <div class="price">$79<small> / year</small></div>
+          <ul><li>Everything in Solo</li><li>About $6.60 a month</li></ul>
+          <button class="btn ghost" type="button" data-plan="solo-yearly-79">Reserve $79/year</button>
+        </div>
+        <div class="plan main">
+          <span class="label">Solo</span>
+          <div class="price">$9<small> / month</small></div>
+          <ul><li>Unlimited clients and notes</li><li>Body chart on phone and laptop</li><li>PDF, CSV and full backup export</li><li>Sync across devices (coming next)</li></ul>
+          <button class="btn" type="button" data-plan="solo-monthly-9">Reserve $9/month</button>
+        </div>
+        <div class="plan">
+          <span class="label">Small studio</span>
+          <div class="price">$19<small> / month</small></div>
+          <ul><li>Up to 3 practitioners</li><li>Shared client list</li></ul>
+          <button class="btn ghost" type="button" data-plan="studio-19">Reserve $19/month</button>
+        </div>
+      </div>
+      <p class="after-plans">Reserving takes an email address. Nothing is charged, and we'll ask before billing ever starts.</p>
+    </div>
+  </section>
+
+  <section class="band" id="signup">
+    <div class="wrap split">
+      <div class="sec-head flush">
+        <span class="label">Early access</span>
+        <h2>Get sync first, at beta pricing.</h2>
+        <p>We'll email you once when sync is ready. No newsletter.</p>
+      </div>
+      <!-- Paste your Formspree endpoint into action="" (see PUBLISH.md). Empty action = local thank-you only. -->
+      <form class="lead" id="lead" action="" method="POST">
+        <p class="chosen" id="lead-chosen" hidden></p>
+        <label for="lead-email">Email
+          <input type="email" id="lead-email" name="email" autocomplete="email" placeholder="you@yourpractice.com" required>
+        </label>
+        <label for="lead-current">What do you chart with now?
+          <select id="lead-current" name="current_tool">
+            <option value="">Choose one (optional)</option>
+            <option>Paper forms</option>
+            <option>ClinicSense</option>
+            <option>MassageBook</option>
+            <option>SimplePractice</option>
+            <option>Jane</option>
+            <option>Notes app / Google Docs</option>
+            <option>Something else</option>
+          </select>
+        </label>
+        <fieldset class="ask" id="lead-allinone">
+          <legend>Would you pay more if Tablenote also did booking and payments?</legend>
+          <label for="aio-no"><input type="radio" id="aio-no" name="wants_booking" value="no-notes-only"> No, I only need notes</label>
+          <label for="aio-maybe"><input type="radio" id="aio-maybe" name="wants_booking" value="maybe"> Maybe, if it were simple</label>
+          <label for="aio-yes"><input type="radio" id="aio-yes" name="wants_booking" value="yes-all-in-one"> Yes, I want one app for everything</label>
+        </fieldset>
+        <input type="hidden" name="plan" id="lead-plan" value="">
+        <button class="btn" type="submit" id="lead-submit">Join early access</button>
+        <p class="thanks" id="lead-thanks" hidden>You're on the list. We'll email you when sync is ready.</p>
+      </form>
+    </div>
+  </section>
+
+  <section class="band faq" id="faq">
+    <div class="wrap">
+      <div class="sec-head"><span class="label">Questions</span><h2>Before you try it</h2></div>
+      <details>
+        <summary>Is Tablenote HIPAA compliant?</summary>
+        <p>During the beta your notes never leave your device, so we never receive or store client health information. The sync version will run on HIPAA-eligible infrastructure, and we'll sign a Business Associate Agreement with you before you use it for client records.</p>
+      </details>
+      <details>
+        <summary>Does it work on my phone?</summary>
+        <p>Yes. It runs in Safari or Chrome on any recent phone, tablet or laptop. Add it to your home screen and it opens like an app.</p>
+      </details>
+      <details>
+        <summary>Can I bring notes from my current software?</summary>
+        <p>Not yet. Tell us what you use in the early-access form and we'll build the importers people ask for most.</p>
+      </details>
+      <details>
+        <summary>What happens to my notes if I stop paying?</summary>
+        <p>You keep export access. Download every note as PDF, CSV, or a full backup file at any time, including after you cancel.</p>
+      </details>
+      <details>
+        <summary>Does it handle booking or insurance claims?</summary>
+        <p>No. Tablenote is only for charting. Keep your booking and payment tools, and use Tablenote for the notes.</p>
+      </details>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>Tablenote is in beta. Reserving a plan records interest only; nothing is charged.</span>
+    <a href="app/">Open the app</a>
+  </div>
+</footer>
+
+<script src="assets/bodychart.js"></script>
+<script>
+(function () {
+  // Cookie-free counts via hits.sh (no account). Each key's total is public at https://hits.sh/<key>/
+  // Skipped on localhost so testing doesn't inflate the numbers. Landing page only, never in /app.
+  var COUNT = 'https://hits.sh/zircon1011a-prog.github.io/tablenote/';
+  var live = !/^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname);
+  function hit(key) { if (live) { var i = new Image(); i.referrerPolicy = 'no-referrer'; i.src = COUNT + key + '.svg'; } }
+  function track(name) {
+    hit('e-' + name);
+    try { if (window.goatcounter && window.goatcounter.count) window.goatcounter.count({ path: 'event-' + name, title: name, event: true }); } catch (e) {}
+  }
+  hit('visit');
+  document.querySelectorAll('[data-track]').forEach(function (a) {
+    a.addEventListener('click', function () { track(a.getAttribute('data-track')); });
+  });
+
+  // Hero demo: a live body chart preloaded with example marks
+  var sample = [
+    { id: 'a', view: 'back', x: 122, y: 98, type: 'pain' },
+    { id: 'b', view: 'back', x: 78, y: 98, type: 'pain' },
+    { id: 'c', view: 'back', x: 115, y: 124, type: 'tension' },
+    { id: 'd', view: 'front', x: 118, y: 320, type: 'avoid' }
+  ];
+  sample.forEach(function (m) { m.region = BodyChart.region(m.view, m.x, m.y); });
+  var list = document.getElementById('demo-marks');
+  function renderList(marks) {
+    list.innerHTML = marks.length ? '' : '<li style="color:var(--ink-2)">No marks yet. Tap the figure.</li>';
+    marks.forEach(function (m) {
+      var li = document.createElement('li');
+      li.innerHTML = BodyChart.glyphSVG(m.type);
+      li.appendChild(document.createTextNode(m.region));
+      list.appendChild(li);
+    });
+  }
+  var tracked = false;
+  var chart = BodyChart.create(document.getElementById('demo-chart'), {
+    marks: sample, type: 'pain',
+    onChange: function (m) { renderList(m); if (!tracked) { track('demo-mark'); tracked = true; } }
+  });
+  renderList(sample);
+
+  var legend = document.getElementById('demo-legend');
+  Object.keys(BodyChart.TYPES).forEach(function (t, i) {
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.setAttribute('aria-pressed', i === 0 ? 'true' : 'false');
+    b.innerHTML = BodyChart.glyphSVG(t) + BodyChart.TYPES[t].label.split(' /')[0];
+    b.addEventListener('click', function () {
+      legend.querySelectorAll('button').forEach(function (x) { x.setAttribute('aria-pressed', 'false'); });
+      b.setAttribute('aria-pressed', 'true');
+      chart.setType(t);
+    });
+    legend.appendChild(b);
+  });
+
+  // "Reserve" = pre-payment intent. Record the plan, then move to the form.
+  var names = { 'solo-yearly-79': 'Solo yearly, $79/year', 'solo-monthly-9': 'Solo, $9/month', 'studio-19': 'Small studio, $19/month' };
+  document.querySelectorAll('[data-plan]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var plan = b.getAttribute('data-plan');
+      document.getElementById('lead-plan').value = plan;
+      var chosen = document.getElementById('lead-chosen');
+      chosen.textContent = 'Reserving: ' + names[plan];
+      chosen.hidden = false;
+      document.getElementById('lead-submit').textContent = 'Reserve my price';
+      track('plan-' + plan);
+      document.getElementById('signup').scrollIntoView({ behavior: 'smooth' });
+      setTimeout(function () { document.getElementById('lead-email').focus({ preventScroll: true }); }, 400);
+    });
+  });
+
+  var form = document.getElementById('lead');
+  var thanks = document.getElementById('lead-thanks');
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    var action = form.getAttribute('action');
+    var done = function () {
+      thanks.textContent = "You're on the list. We'll email you when sync is ready.";
+      thanks.hidden = false;
+      document.getElementById('lead-submit').disabled = true;
+      track('lead-submit');
+    };
+    if (!action) { done(); return; }
+    fetch(action, { method: 'POST', body: new FormData(form), headers: { Accept: 'application/json' } })
+      .then(function (r) { if (r.ok) done(); else throw new Error('status ' + r.status); })
+      .catch(function () {
+        thanks.textContent = "That didn't go through. Check your connection and try again.";
+        thanks.hidden = false;
+      });
+  });
+})();
+</script>
+</body>
+</html>

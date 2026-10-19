@@ -1,0 +1,11 @@
+{
+  "name": "Tablenote",
+  "short_name": "Tablenote",
+  "description": "SOAP notes and body chart for solo massage therapists.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f2f3ef",
+  "theme_color": "#3243a3",
+  "icons": [{ "src": "../assets/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}
