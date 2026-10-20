@@ -252,30 +252,30 @@
     <div class="wrap">
       <div class="sec-head">
         <span class="label">Pricing</span>
-        <h2>One price. Unlimited clients.</h2>
-        <p>The beta is free. Pick the plan you'd choose at launch and we'll hold that price for you.</p>
+        <h2>Free to start. One fair price when you grow.</h2>
+        <p>Chart up to 3 clients for free. Founding members get unlimited clients at a price that never goes up while they stay.</p>
       </div>
       <div class="plans">
         <div class="plan">
-          <span class="label">Solo, yearly</span>
-          <div class="price">$79<small> / year</small></div>
-          <ul><li>Everything in Solo</li><li>About $6.60 a month</li></ul>
-          <button class="btn ghost" type="button" data-plan="solo-yearly-79">Reserve $79/year</button>
+          <span class="label">Free</span>
+          <div class="price">$0</div>
+          <ul><li>Up to 3 clients</li><li>SOAP notes and body chart</li><li>PDF, CSV and full backup export</li></ul>
+          <a class="btn ghost" href="app/" data-track="plan-free-open-app">Open the app</a>
         </div>
         <div class="plan main">
-          <span class="label">Solo</span>
-          <div class="price">$9<small> / month</small></div>
-          <ul><li>Unlimited clients and notes</li><li>Body chart on phone and laptop</li><li>PDF, CSV and full backup export</li><li>Sync across devices (coming next)</li></ul>
-          <button class="btn" type="button" data-plan="solo-monthly-9">Reserve $9/month</button>
+          <span class="label">Founding member</span>
+          <div class="price">$59<small> / year</small></div>
+          <ul><li>Unlimited clients and notes</li><li>Use it on up to 3 of your devices</li><li>Price locked while you stay subscribed</li><li>30-day money-back guarantee</li></ul>
+          <button class="btn" type="button" data-plan="founding-59" id="buy-founding">Reserve $59/year</button>
         </div>
         <div class="plan">
-          <span class="label">Small studio</span>
-          <div class="price">$19<small> / month</small></div>
-          <ul><li>Up to 3 practitioners</li><li>Shared client list</li></ul>
-          <button class="btn ghost" type="button" data-plan="studio-19">Reserve $19/month</button>
+          <span class="label">Monthly</span>
+          <div class="price">$9<small> / month</small></div>
+          <ul><li>Unlimited clients and notes</li><li>Cancel any time</li></ul>
+          <button class="btn ghost" type="button" data-plan="solo-monthly-9">Reserve $9/month</button>
         </div>
       </div>
-      <p class="after-plans">Reserving takes an email address. Nothing is charged, and we'll ask before billing ever starts.</p>
+      <p class="after-plans" id="after-plans">Paid plans open soon. Reserving takes an email address; nothing is charged. See the <a href="refund.html">Refund Policy</a>.</p>
     </div>
   </section>
 
@@ -351,7 +351,7 @@
 <footer>
   <div class="wrap">
     <span>Tablenote is in beta. Reserving a plan records interest only; nothing is charged.</span>
-    <span class="row" style="display:flex;gap:16px;flex-wrap:wrap"><a href="privacy.html">Privacy</a><a href="terms.html">Terms</a><a href="app/">Open the app</a></span>
+    <span class="row" style="display:flex;gap:16px;flex-wrap:wrap"><a href="privacy.html">Privacy</a><a href="terms.html">Terms</a><a href="refund.html">Refunds</a><a href="app/">Open the app</a></span>
   </div>
 </footer>
 
@@ -412,7 +412,17 @@
   });
 
   // "Reserve" = pre-payment intent. Record the plan, then move to the form.
-  var names = { 'solo-yearly-79': 'Solo yearly, $79/year', 'solo-monthly-9': 'Solo, $9/month', 'studio-19': 'Small studio, $19/month' };
+  // Set this to the Lemon Squeezy checkout link when sales open; the founding button then goes straight to checkout.
+  var CHECKOUT_URL = '';
+  if (CHECKOUT_URL) {
+    var old = document.getElementById('buy-founding');
+    var link = document.createElement('a');
+    link.className = old.className; link.href = CHECKOUT_URL; link.textContent = 'Become a founding member';
+    link.addEventListener('click', function () { track('checkout-founding-59'); });
+    old.replaceWith(link);
+    document.getElementById('after-plans').innerHTML = 'Secure checkout by Lemon Squeezy, which handles payment and sales tax. 30-day money-back guarantee. See the <a href="refund.html">Refund Policy</a>.';
+  }
+  var names = { 'founding-59': 'Founding member, $59/year', 'solo-monthly-9': 'Monthly, $9/month' };
   document.querySelectorAll('[data-plan]').forEach(function (b) {
     b.addEventListener('click', function () {
       var plan = b.getAttribute('data-plan');

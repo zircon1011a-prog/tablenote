@@ -4,6 +4,11 @@
   'use strict';
 
   var KEY = 'tablenote.v1';
+
+  // Sales switch. While checkoutUrl is empty the free limit is not enforced (beta stays fully open).
+  // storeId: set to the Lemon Squeezy store id so only our keys unlock the app.
+  var SALES = { checkoutUrl: '', storeId: null, freeClients: 3, priceLabel: '$59/year' };
+  var LICENSE_API = 'https://api.lemonsqueezy.com/v1/licenses/';
   var view = document.getElementById('view');
   var saveState = document.getElementById('save-state');
 
@@ -42,13 +47,14 @@
     return fresh;
   }
 
-  var saveTimer = null;
+  var saveTimer = null, dirty = false;
   function save() {
+    clearTimeout(saveTimer); dirty = false;
     try { localStorage.setItem(KEY, JSON.stringify(db)); storageOK = true; }
     catch (e) { storageOK = false; }
     showSave();
   }
-  function saveSoon() { clearTimeout(saveTimer); saveTimer = setTimeout(save, 350); }
+  function saveSoon() { dirty = true; clearTimeout(saveTimer); saveTimer = setTimeout(save, 350); }
   function showSave() {
     saveState.classList.toggle('bad', !storageOK);
     saveState.firstChild.textContent = storageOK ? 'Saved on this device' : "Not saved. This browser is blocking storage";
@@ -75,6 +81,59 @@
   function isBlank(n) { return !n.s && !n.o && !n.a && !n.p && !(n.marks && n.marks.length) && n.painBefore == null && n.painAfter == null; }
   function realNotes() { return db.notes.filter(function (n) { return !n.example; }); }
   function plural(n, w) { return n + ' ' + w + (n === 1 ? '' : 's'); }
+
+  /* ---------- license (Lemon Squeezy, checked from the browser) ---------- */
+  function license() { return db.settings.license || null; }
+  function isPro() {
+    var l = license();
+    return !!(l && l.status === 'active' && (!l.expiresAt || new Date(l.expiresAt) > new Date()));
+  }
+  function realClients() { return db.clients.filter(function (c) { return !c.example; }).length; }
+  function canAddClient() { return !SALES.checkoutUrl || isPro() || realClients() < SALES.freeClients; }
+  function licenseCall(action, params) {
+    return fetch(LICENSE_API + action, {
+      method: 'POST',
+      headers: { Accept: 'application/json', 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams(params).toString()
+    }).then(function (r) { return r.json(); });
+  }
+  function activateLicense(key) {
+    var name = 'Tablenote · ' + (/iPhone|iPad/.test(navigator.userAgent) ? 'iPhone/iPad' : /Android/.test(navigator.userAgent) ? 'Android' : /Mac/.test(navigator.userAgent) ? 'Mac' : 'Browser');
+    return licenseCall('activate', { license_key: key, instance_name: name }).then(function (j) {
+      if (!j.activated) throw new Error(j.error || 'not activated');
+      if (SALES.storeId && j.meta && j.meta.store_id !== SALES.storeId) throw new Error('This key is not for Tablenote.');
+      db.settings.license = { key: key, instanceId: j.instance && j.instance.id, status: (j.license_key && j.license_key.status) || 'active',
+        expiresAt: j.license_key && j.license_key.expires_at, email: j.meta && j.meta.customer_email, validatedAt: Date.now() };
+      save();
+    });
+  }
+  function revalidateLicense() {
+    var l = license();
+    if (!l || !navigator.onLine || (Date.now() - (l.validatedAt || 0)) < 7 * 864e5) return;
+    licenseCall('validate', { license_key: l.key, instance_id: l.instanceId || '' }).then(function (j) {
+      if (j.license_key) { l.status = j.valid ? 'active' : j.license_key.status; l.expiresAt = j.license_key.expires_at; }
+      else if (j.valid === false) { l.status = 'invalid'; }
+      l.validatedAt = Date.now(); save();
+    }).catch(function () { /* offline or API down: keep the current status */ });
+  }
+  function deactivateLicense() {
+    var l = license();
+    var done = function () { delete db.settings.license; save(); };
+    if (!l) return Promise.resolve();
+    return licenseCall('deactivate', { license_key: l.key, instance_id: l.instanceId || '' }).then(done, done);
+  }
+  function upgradePanel(reason) {
+    var buy = SALES.checkoutUrl ? '<a class="btn" href="' + esc(SALES.checkoutUrl) + '" target="_blank" rel="noopener">Become a founding member, ' + esc(SALES.priceLabel) + '</a>' : '';
+    return '<section class="panel" id="plan-panel"><h2>' + (isPro() ? 'Founding member' : 'Your plan') + '</h2>' +
+      (isPro()
+        ? '<p>Unlimited clients on this device' + (license().expiresAt ? ' until ' + fmtDate(isoDay(new Date(license().expiresAt))) : '') + '. Thank you for supporting Tablenote.</p>' +
+          '<div class="row"><button class="btn small quiet" data-action="deactivate-license">Remove license from this device</button></div>'
+        : '<p>' + (reason || ('The free plan covers ' + SALES.freeClients + ' clients. A founding membership unlocks unlimited clients on your phone and laptop.')) + '</p>' +
+          (buy ? '<div class="row">' + buy + '</div>' : '') +
+          '<label class="field"><span>Have a license key?</span><input type="text" id="license-key" autocomplete="off" spellcheck="false" placeholder="Paste the key from your receipt email"></label>' +
+          '<div class="row"><button class="btn small" data-action="activate-license">Activate</button></div>') +
+      '<p class="hint" id="license-msg" role="status"></p></section>';
+  }
 
   function seed(d) {
     var cid = 'ex-jordan';
@@ -172,6 +231,11 @@
   }
 
   function renderNewClient() {
+    if (!canAddClient()) {
+      view.innerHTML = '<a class="back" href="#/">← Clients</a><div class="page-head"><h1>New client</h1></div>' +
+        upgradePanel('You have ' + realClients() + ' clients, the most the free plan holds. Your existing notes stay free to view, edit and export. To add more clients, become a founding member.');
+      return;
+    }
     view.innerHTML = '<a class="back" href="#/">← Clients</a><div class="page-head"><h1>New client</h1></div>' + clientForm();
     document.getElementById('cf-name').focus();
   }
@@ -314,6 +378,7 @@
   function renderData() {
     var st = db.settings, real = realNotes().length;
     var h = '<a class="back" href="#/">← Clients</a><div class="page-head"><div><h1>Export &amp; backup</h1><p class="sub">Your records, in files you keep.</p></div></div>';
+    if (SALES.checkoutUrl || license()) h += upgradePanel();
     h += '<section class="panel"><h2>Where your notes are</h2><p>Saved in this browser on this device. Nothing is sent to a server. Clearing browser data or switching phones removes them, so keep a backup file.</p>' +
       '<div class="stat">' + plural(db.clients.length, 'client') + ' · ' + plural(db.notes.length, 'note') + (real !== db.notes.length ? ' (' + (db.notes.length - real) + ' example)' : '') + ' · last backup: ' + (st.lastBackupAt ? fmtDate(isoDay(new Date(st.lastBackupAt))) : 'never') + '</div></section>';
     h += '<section class="panel"><h2>Download</h2>' +
@@ -423,9 +488,30 @@
       backup(); if (parse()[0] === 'data') renderData(); else renderList();
     } else if (act === 'csv') {
       exportCSV();
+    } else if (act === 'activate-license') {
+      var input = document.getElementById('license-key'), msg = document.getElementById('license-msg');
+      var key = input.value.trim();
+      if (!key) { msg.textContent = 'Paste the license key from your receipt email.'; input.focus(); return; }
+      a.disabled = true; msg.textContent = 'Checking your key…';
+      activateLicense(key).then(function () {
+        var back = parse()[0] === 'client' ? '#/client/new' : null;
+        if (back) renderNewClient(); else renderData();
+        var m = document.getElementById('license-msg'); if (m) m.textContent = 'Activated. Unlimited clients are unlocked on this device.';
+      }).catch(function (err) {
+        a.disabled = false;
+        msg.textContent = /not found|invalid/i.test(err.message) ? "That key wasn't found. Check it against your receipt email and try again."
+          : /limit/i.test(err.message) ? 'This key is already active on the maximum number of devices. Remove it from another device first.'
+          : /not for Tablenote/.test(err.message) ? err.message
+          : "Couldn't check the key. Check your connection and try again.";
+      });
+    } else if (act === 'deactivate-license') {
+      if (!confirmTwice(a, 'dl', 'Tap again to remove the license')) return;
+      deactivateLicense().then(renderData);
     } else if (act === 'restore-confirm') {
       var r = ui.pendingRestore;
+      var lic = db.settings.license;
       db.clients = r.clients; db.notes = r.notes; db.settings = Object.assign(blank().settings, r.settings || {}); db.seeded = true;
+      if (lic) db.settings.license = lic;
       ui.pendingRestore = null; save(); renderData();
       document.getElementById('restore-msg').textContent = 'Restored ' + plural(db.clients.length, 'client') + ' and ' + plural(db.notes.length, 'note') + '.';
     } else if (act === 'restore-cancel') {
@@ -433,6 +519,7 @@
     } else if (act === 'wipe') {
       if (!confirmTwice(a, 'wipe', 'Tap again to delete all data')) return;
       var keep = db.settings; db = blank(); db.seeded = true; db.settings.therapist = keep.therapist; db.settings.credential = keep.credential; db.settings.business = keep.business;
+      if (keep.license) db.settings.license = keep.license;
       save(); location.hash = '#/';
     }
   });
@@ -486,8 +573,17 @@
     }
   });
 
-  window.addEventListener('pagehide', function () { clearTimeout(saveTimer); save(); });
+  // Only flush edits that are still waiting; never write a stale copy over what another tab saved.
+  window.addEventListener('pagehide', function () { if (dirty) save(); });
+  // Another tab changed the notes: reload them here, unless this tab is mid-edit.
+  window.addEventListener('storage', function (e) {
+    if (e.key !== KEY || dirty) return;
+    db = load();
+    var parts = parse();
+    if (!(parts[0] === 'note' && document.activeElement && /TEXTAREA|INPUT|SELECT/.test(document.activeElement.tagName))) route();
+  });
 
   if (!storageOK) showSave();
   route();
+  revalidateLicense();
 })();
