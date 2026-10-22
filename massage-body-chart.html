@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Printable Massage Body Chart (Front &amp; Back, Free) — Tablenote</title>
+<meta name="description" content="A free printable body chart for massage therapists, anterior and posterior views, with a marking legend and the left/right rule most charting mistakes come from.">
+<link rel="canonical" href="https://zircon1011a-prog.github.io/tablenote/massage-body-chart.html">
+<link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Bricolage+Grotesque:opsz,wght@12..96,600..800&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="assets/brand.css">
+<style>
+  .doc { max-width: 760px; margin: 0 auto; padding-left: var(--gutter-l); padding-right: var(--gutter-r); padding-block: 28px 80px; display: grid; gap: 16px; }
+  .top { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+  .doc h1 { font-size: clamp(34px, 6vw, 52px); font-weight: 800; line-height: 1.02; letter-spacing: -0.03em; margin-top: 8px; }
+  .doc h2 { font-size: 26px; font-weight: 750; margin-top: 26px; }
+  .doc p, .doc li { max-width: 65ch; }
+  .lede { font-size: 19px; color: var(--ink-2); margin: 0; }
+  .doc ul, .doc ol { margin: 0; padding-left: 22px; display: grid; gap: 6px; }
+  .sheet { background: #fff; color: #111; border: 1px solid var(--line); border-radius: 12px; padding: 20px; display: grid; gap: 14px;
+    --tissue: #f1f2f7; --tissue-line: #8e96bd; --ink-2: #555; --surface: #fff; --pain: #cf3f35; --tension: #c97f12; --avoid: #7446bd; }
+  .sheet .head { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+  .sheet .head div { border-bottom: 1px solid #111; padding-top: 18px; font-size: 12px; color: #555; }
+  .sheet .bodychart { width: 100%; height: auto; display: block; }
+  .legend-print { display: flex; flex-wrap: wrap; gap: 16px; font-size: 14px; }
+  .legend-print span { display: inline-flex; align-items: center; gap: 6px; }
+  .legend-print svg { width: 14px; height: 14px; }
+  .demo { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px; display: grid; gap: 10px; }
+  .demo .bodychart { width: 100%; max-width: 520px; margin: 0 auto; display: block; height: auto; cursor: crosshair; touch-action: manipulation; }
+  .demo ul { list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 14px; min-height: 24px; }
+  .demo li { display: inline-flex; align-items: center; gap: 6px; }
+  .demo li svg { width: 13px; height: 13px; }
+  .cta { background: var(--accent-soft); border-radius: 12px; padding: 18px; display: grid; gap: 10px; }
+  .cta p { margin: 0; }
+  @media print { .top, .cta, .noprint { display: none !important; } body { background: #fff; } .doc { padding: 0; } .sheet { border: 0; padding: 0; } }
+</style>
+</head>
+<body>
+<main class="doc">
+  <div class="top noprint">
+    <a class="wordmark" href="./" aria-label="Tablenote home">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="4.6" rx="3.6" ry="2.6" fill="var(--accent)"/><rect x="5.5" y="9" width="13" height="13.5" rx="3" fill="none" stroke="var(--ink)" stroke-width="2"/><path d="M8.5 13.5h7M8.5 17h4.5" stroke="var(--ink)" stroke-width="1.6" stroke-linecap="round"/></svg>
+      Tablenote
+    </a>
+    <a class="btn small" href="app/">Try the free app</a>
+  </div>
+
+  <div class="noprint">
+    <span class="label">Free resource for massage therapists</span>
+    <h1>Printable massage body chart, front and back</h1>
+    <p class="lede">A clean anterior and posterior figure for marking pain, tension and areas to avoid. Print the chart below, or mark it on your phone in the free app.</p>
+  </div>
+
+  <div class="sheet" aria-label="Printable body chart">
+    <div class="head"><div>Client</div><div>Date</div><div>Therapist</div></div>
+    <div id="print-chart"></div>
+    <div class="legend-print" id="print-legend"></div>
+  </div>
+
+  <div class="noprint">
+    <h2>The left/right rule</h2>
+    <p>Always chart the <b>client's</b> left and right, not yours. On the anterior (front) view the client faces you, so their left side is on <b>your right</b>. On the posterior (back) view their left is on your left. Mixing these up is the most common body chart mistake, and it matters when another therapist reads your notes.</p>
+
+    <h2>A simple marking legend</h2>
+    <ul>
+      <li><b>Filled circle:</b> pain or tenderness the client reports.</li>
+      <li><b>X:</b> tension, hypertonicity or a trigger point you found.</li>
+      <li><b>Circle with a slash:</b> an area to avoid or treat lightly, such as varicose veins, a recent injury or a skin condition.</li>
+    </ul>
+    <p>Use the same symbols every session. Comparing this week's chart with last week's is the quickest way to show progress, to the client and in your records.</p>
+
+    <h2>Try it: tap to mark</h2>
+    <div class="demo">
+      <div class="legend" role="group" aria-label="Mark type" id="demo-legend"></div>
+      <div id="demo-chart"></div>
+      <p class="hint" style="margin:0">Tap the figure to add a mark, tap a mark to remove it. The region is named for you.</p>
+      <ul id="demo-marks" aria-live="polite"></ul>
+    </div>
+
+    <div class="cta" style="margin-top:18px">
+      <p><b>Keep the chart with the note.</b> In Tablenote the body chart sits inside every SOAP note, names each region, and exports with the note as a PDF. Free, no signup, notes stay on your device.</p>
+      <div><a class="btn" href="app/">Open the free app</a> <a class="btn ghost" href="soap-note-template.html">SOAP note template</a></div>
+    </div>
+
+    <p class="hint" style="margin-top:24px"><a href="./">Tablenote</a> · <a href="soap-note-template.html">SOAP note template</a> · <a href="massage-intake-form.html">Intake form</a> · <a href="privacy.html">Privacy</a></p>
+  </div>
+</main>
+<script src="assets/bodychart.js"></script>
+<script>
+  BodyChart.create(document.getElementById('print-chart'), { marks: [], readOnly: true });
+  var pl = document.getElementById('print-legend');
+  Object.keys(BodyChart.TYPES).forEach(function (t) {
+    var s = document.createElement('span');
+    s.innerHTML = BodyChart.glyphSVG(t) + BodyChart.TYPES[t].label;
+    pl.appendChild(s);
+  });
+  var list = document.getElementById('demo-marks');
+  function render(marks) {
+    list.innerHTML = '';
+    marks.forEach(function (m) {
+      var li = document.createElement('li');
+      li.innerHTML = BodyChart.glyphSVG(m.type);
+      li.appendChild(document.createTextNode(m.region));
+      list.appendChild(li);
+    });
+  }
+  var chart = BodyChart.create(document.getElementById('demo-chart'), { marks: [], type: 'pain', onChange: render });
+  var lg = document.getElementById('demo-legend');
+  Object.keys(BodyChart.TYPES).forEach(function (t, i) {
+    var b = document.createElement('button');
+    b.type = 'button'; b.setAttribute('aria-pressed', i === 0 ? 'true' : 'false');
+    b.innerHTML = BodyChart.glyphSVG(t) + BodyChart.TYPES[t].label.split(' /')[0];
+    b.addEventListener('click', function () {
+      lg.querySelectorAll('button').forEach(function (x) { x.setAttribute('aria-pressed', 'false'); });
+      b.setAttribute('aria-pressed', 'true'); chart.setType(t);
+    });
+    lg.appendChild(b);
+  });
+</script>
+</body>
+</html>
