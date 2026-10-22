@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Massage Intake Form Template (Free, Printable) — Tablenote</title>
+<meta name="description" content="A free, printable massage therapy intake form: contact details, health history, medications, contraindication checklist, pressure preferences and consent. With notes on what each section is for.">
+<link rel="canonical" href="https://zircon1011a-prog.github.io/tablenote/massage-intake-form.html">
+<link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Bricolage+Grotesque:opsz,wght@12..96,600..800&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="assets/brand.css">
+<style>
+  .doc { max-width: 760px; margin: 0 auto; padding-left: var(--gutter-l); padding-right: var(--gutter-r); padding-block: 28px 80px; display: grid; gap: 16px; }
+  .top { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+  .doc h1 { font-size: clamp(34px, 6vw, 52px); font-weight: 800; line-height: 1.02; letter-spacing: -0.03em; margin-top: 8px; }
+  .doc h2 { font-size: 26px; font-weight: 750; margin-top: 26px; }
+  .doc p, .doc li { max-width: 65ch; }
+  .lede { font-size: 19px; color: var(--ink-2); margin: 0; }
+  .doc ul { margin: 0; padding-left: 22px; display: grid; gap: 6px; }
+  .sheet { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 20px; display: grid; gap: 18px; }
+  .sheet h3 { font: 500 12px/1.2 var(--f-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--accent); border-bottom: 1px solid var(--line); padding-bottom: 6px; }
+  .lines { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 20px; }
+  @media (max-width: 520px) { .lines { grid-template-columns: minmax(0, 1fr); } }
+  .line { border-bottom: 1px solid var(--ink-2); padding-top: 18px; font-size: 13px; color: var(--ink-2); min-width: 0; }
+  .line.wide { grid-column: 1 / -1; }
+  .checks { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px 20px; font-size: 15px; }
+  @media (max-width: 520px) { .checks { grid-template-columns: minmax(0, 1fr); } }
+  .checks span::before { content: "☐  "; }
+  .scale { display: flex; flex-wrap: wrap; gap: 8px; font-size: 15px; }
+  .scale span { border: 1px solid var(--line); border-radius: 6px; padding: 4px 10px; }
+  .consent { font-size: 14px; color: var(--ink); }
+  .cta { background: var(--accent-soft); border-radius: 12px; padding: 18px; display: grid; gap: 10px; }
+  .cta p { margin: 0; }
+  @media print { .top, .cta, .noprint { display: none !important; } body { background: #fff; } .doc { padding: 0; } .sheet { border: 0; padding: 0; } }
+</style>
+</head>
+<body>
+<main class="doc">
+  <div class="top">
+    <a class="wordmark" href="./" aria-label="Tablenote home">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="4.6" rx="3.6" ry="2.6" fill="var(--accent)"/><rect x="5.5" y="9" width="13" height="13.5" rx="3" fill="none" stroke="var(--ink)" stroke-width="2"/><path d="M8.5 13.5h7M8.5 17h4.5" stroke="var(--ink)" stroke-width="1.6" stroke-linecap="round"/></svg>
+      Tablenote
+    </a>
+    <a class="btn small" href="app/">Try the free app</a>
+  </div>
+
+  <span class="label">Free resource for massage therapists</span>
+  <h1>Massage intake form template, free and printable</h1>
+  <p class="lede">Everything a solo massage therapist needs to know before the first session, on one page. Print it, or copy the sections into your own form. Notes on what each section is for are below the form.</p>
+
+  <p class="noprint">Print this page: the header, buttons and notes print hidden, so you get just the form.</p>
+
+  <div class="sheet" aria-label="Massage intake form">
+    <section>
+      <h3>Client details</h3>
+      <div class="lines">
+        <div class="line">Full name</div><div class="line">Date of birth</div>
+        <div class="line">Phone</div><div class="line">Email</div>
+        <div class="line">Emergency contact (name, phone)</div><div class="line">Occupation</div>
+      </div>
+    </section>
+    <section>
+      <h3>Today's visit</h3>
+      <div class="lines">
+        <div class="line wide">Main reason for your visit today</div>
+        <div class="line wide">Where do you feel pain or tension? How long has it been there?</div>
+        <div class="line">Pain right now (0 = none, 10 = worst)</div><div class="line">Have you had massage before? (Y / N)</div>
+      </div>
+    </section>
+    <section>
+      <h3>Health history (check all that apply)</h3>
+      <div class="checks">
+        <span>High or low blood pressure</span><span>Heart condition</span>
+        <span>Blood clots / DVT</span><span>Varicose veins</span>
+        <span>Diabetes</span><span>Epilepsy / seizures</span>
+        <span>Cancer (current or past)</span><span>Osteoporosis</span>
+        <span>Pregnant (weeks: ____ )</span><span>Recent surgery or injury</span>
+        <span>Skin condition / rash</span><span>Allergies (oils, lotions, nuts)</span>
+        <span>Numbness or tingling</span><span>Headaches / migraines</span>
+        <span>Arthritis</span><span>Contagious illness</span>
+      </div>
+      <div class="lines" style="margin-top:8px">
+        <div class="line wide">Medications and supplements (including blood thinners and pain relievers)</div>
+        <div class="line wide">Anything else your therapist should know</div>
+      </div>
+    </section>
+    <section>
+      <h3>Preferences</h3>
+      <p style="margin:0 0 6px">Preferred pressure:</p>
+      <div class="scale"><span>Light</span><span>Light–medium</span><span>Medium</span><span>Firm</span><span>Deep</span></div>
+      <div class="lines" style="margin-top:8px">
+        <div class="line">Areas to focus on</div><div class="line">Areas to avoid</div>
+      </div>
+    </section>
+    <section>
+      <h3>Consent</h3>
+      <p class="consent">I understand that massage therapy is not a substitute for medical diagnosis or treatment, and that my therapist does not diagnose illness or prescribe medication. I have shared all known medical conditions and will tell my therapist about any changes. I can ask to adjust or stop the session at any time.</p>
+      <div class="lines"><div class="line">Client signature</div><div class="line">Date</div></div>
+    </section>
+  </div>
+
+  <h2>What each section is for</h2>
+  <ul>
+    <li><b>Today's visit</b> becomes the S (subjective) part of your first SOAP note, in the client's own words.</li>
+    <li><b>Health history</b> is where contraindications show up. Blood clots, recent surgery, pregnancy and varicose veins change where and how deep you can work, so check them before every first session and ask about changes at each visit.</li>
+    <li><b>Medications</b> matter more than clients expect: blood thinners raise bruising risk and pain relievers can mask feedback on pressure.</li>
+    <li><b>Preferences</b> save the first five minutes of every session.</li>
+    <li><b>Consent</b> wording varies by state and insurer. Have your own reviewed; this one is a starting point, not legal advice.</li>
+  </ul>
+
+  <div class="cta">
+    <p><b>Keep precautions where you'll see them.</b> In Tablenote, a client's precautions show at the top of every SOAP note you write for them, next to a front/back body chart. Free, no signup, and notes stay on your device.</p>
+    <div><a class="btn" href="app/">Open the free app</a> <a class="btn ghost" href="soap-note-template.html">SOAP note template</a></div>
+  </div>
+
+  <p class="hint" style="margin-top:24px"><a href="./">Tablenote</a> · <a href="privacy.html">Privacy</a> · <a href="terms.html">Terms</a></p>
+</main>
+</body>
+</html>
