@@ -52,6 +52,7 @@
     clearTimeout(saveTimer); dirty = false;
     try { localStorage.setItem(KEY, JSON.stringify(db)); storageOK = true; }
     catch (e) { storageOK = false; }
+    if (typeof askPersist === 'function' && db.clients.some(function (c) { return !c.example; })) askPersist();
     showSave();
   }
   function saveSoon() { dirty = true; clearTimeout(saveTimer); saveTimer = setTimeout(save, 350); }
@@ -181,13 +182,28 @@
   window.addEventListener('hashchange', function () { ui.editingClient = false; ui.pendingRestore = null; route(); });
 
   /* ---------- views ---------- */
+  // iPhone/iPad Safari deletes a website's stored data after 7 days without a visit.
+  // Apps added to the Home Screen are exempt, so iOS browser users get pushed there.
+  var IOS = /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  var STANDALONE = window.navigator.standalone === true || (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
+  var persistAsked = false;
+  function askPersist() {
+    if (persistAsked || !navigator.storage || !navigator.storage.persist) return;
+    persistAsked = true;
+    navigator.storage.persisted().then(function (p) { if (!p) navigator.storage.persist(); }).catch(function () {});
+  }
+  function homeScreenBanner() {
+    if (!IOS || STANDALONE || !db.clients.some(function (c) { return !c.example; })) return '';
+    return '<div class="notice warn"><p><b>Keep your notes safe on iPhone.</b> Safari clears website data after 7 days without a visit. Add Tablenote to your Home Screen to keep notes: tap the Share button, then “Add to Home Screen”, and open it from there.</p></div>';
+  }
   function backupBanner() {
     var real = realNotes().length;
     if (!real) return '';
     var last = db.settings.lastBackupAt;
-    var stale = !last || (Date.now() - last) > 7 * 864e5;
+    var limit = (IOS && !STANDALONE ? 3 : 7) * 864e5;
+    var stale = !last || (Date.now() - last) > limit;
     if (!stale) return '';
-    return '<div class="notice warn"><p><b>' + (last ? 'Last backup ' + fmtDate(isoDay(new Date(last))) + '.' : 'No backup yet.') + '</b> Notes are stored only in this browser. Download a backup file once a week.</p><button class="btn small" data-action="backup">Download backup</button></div>';
+    return '<div class="notice warn"><p><b>' + (last ? 'Last backup ' + fmtDate(isoDay(new Date(last))) + '.' : 'No backup yet.') + '</b> Notes are stored only on this device. Save a backup file to your cloud drive' + (IOS && !STANDALONE ? ' every few days.' : ' once a week.') + '</p><button class="btn small" data-action="backup">Download backup</button></div>';
   }
 
   function renderList() {
@@ -198,6 +214,7 @@
       .sort(function (a, b) { return a.last < b.last ? 1 : a.last > b.last ? -1 : a.c.name.localeCompare(b.c.name); });
     var h = '';
     if (hasExample) h += '<div class="notice"><p>Jordan Lee is an <b>example client</b> so you can see how notes look. Remove it whenever you like.</p><button class="btn small quiet" data-action="remove-examples">Remove example</button></div>';
+    h += homeScreenBanner();
     h += backupBanner();
     h += '<div class="page-head"><div><h1>Clients</h1><p class="sub">' + plural(db.clients.length, 'client') + ' · ' + plural(db.notes.length, 'note') + '</p></div><a class="btn" href="#/client/new">New client</a></div>';
     if (db.clients.length) {
