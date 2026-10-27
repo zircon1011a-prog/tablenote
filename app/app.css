@@ -74,9 +74,12 @@ h2.sec { font-size: 20px; font-weight: 700; display: flex; justify-content: spac
 .scale-top b { font-size: 15px; }
 .scale-top span { font: 400 12px/1.2 var(--f-mono); color: var(--ink-2); }
 .seg { display: flex; flex-wrap: wrap; gap: 4px; }
-.seg button { appearance: none; flex: 1 0 30px; min-height: 40px; min-width: 30px; padding: 0 6px; border-radius: 7px; border: 1px solid var(--line); background: var(--paper); color: var(--ink); font: 500 15px/1 var(--f-mono); cursor: pointer; font-variant-numeric: tabular-nums; }
+.seg button { appearance: none; flex: 1 1 0; min-height: 40px; min-width: 0; padding: 0 2px; border-radius: 7px; border: 1px solid var(--line); background: var(--paper); color: var(--ink); font: 500 15px/1 var(--f-mono); cursor: pointer; font-variant-numeric: tabular-nums; }
 .seg button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
-.seg.words button { font-family: var(--f-body); font-size: 14px; flex-basis: 56px; }
+.seg.words button { font-family: var(--f-body); font-size: 14px; flex: 1 1 auto; padding: 0 6px; }
+.seg { flex-wrap: nowrap; }
+.seg.words { flex-wrap: wrap; }
+@media (max-width: 380px) { .seg button { font-size: 13px; } }
 
 .soap { display: grid; }
 .soap-sec { display: grid; grid-template-columns: 44px minmax(0, 1fr); border-bottom: 1px solid var(--line); }
