@@ -4,7 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Tablenote — SOAP notes for solo massage therapists</title>
-<meta name="description" content="SOAP notes for massage therapists, on your phone. Tap a front-and-back body chart, and export every record as PDF or CSV anytime. $9/month, no lock-in.">
+<link rel="canonical" href="https://zircon1011a-prog.github.io/tablenote/">
+<meta name="description" content="SOAP notes for massage therapists, on your phone. Tap a front-and-back body chart, and export every record as PDF or CSV anytime. Free for up to 3 clients.">
 <meta property="og:title" content="Tablenote — SOAP notes for solo massage therapists">
 <meta property="og:image" content="https://zircon1011a-prog.github.io/tablenote/assets/pitch/tablenote-hero.png">
 <meta property="og:type" content="website">
@@ -276,7 +277,7 @@
           <span class="label">Monthly</span>
           <div class="price">$9<small> / month</small></div>
           <ul><li>Unlimited clients and notes</li><li>Cancel any time</li></ul>
-          <button class="btn ghost" type="button" data-plan="solo-monthly-9">Reserve $9/month</button>
+          <button class="btn ghost" type="button" data-plan="solo-monthly-9" id="buy-monthly">Reserve $9/month</button>
         </div>
       </div>
       <p class="after-plans" id="after-plans">Paid plans open soon. Reserving takes an email address; nothing is charged. See the <a href="refund.html">Refund Policy</a>.</p>
@@ -345,6 +346,14 @@
         <p>You keep export access. Download every note as PDF, CSV, or a full backup file at any time, including after you cancel.</p>
       </details>
       <details>
+        <summary>I use Square for booking. Can I use Tablenote alongside it?</summary>
+        <p>Yes. The two don't connect, and they don't need to. Keep booking and payments in Square, and write your notes here.</p>
+      </details>
+      <details>
+        <summary>Can I dictate my notes? Does it use AI?</summary>
+        <p>Tablenote has no AI and never records a session. To speak a note, tap the microphone on your phone's keyboard. That dictation is handled by your phone's own software, not by Tablenote.</p>
+      </details>
+      <details>
         <summary>Does it handle booking or insurance claims?</summary>
         <p>No. Tablenote is only for charting. Keep your booking and payment tools, and use Tablenote for the notes.</p>
       </details>
@@ -355,7 +364,7 @@
 <footer>
   <div class="wrap">
     <span>Tablenote is in beta. Reserving a plan records interest only; nothing is charged.</span>
-    <span class="row" style="display:flex;gap:16px;flex-wrap:wrap"><a href="soap-note-template.html">Free SOAP note template</a><a href="massage-intake-form.html">Free intake form</a><a href="massage-body-chart.html">Printable body chart</a><a href="massage-soap-note-examples.html">SOAP note examples</a><a href="massage-charting-abbreviations.html">Charting abbreviations</a><a href="privacy.html">Privacy</a><a href="terms.html">Terms</a><a href="refund.html">Refunds</a><a href="app/">Open the app</a></span>
+    <span class="row" style="display:flex;gap:16px;flex-wrap:wrap"><a href="soap-note-template.html">Free SOAP note template</a><a href="massage-intake-form.html">Free intake form</a><a href="massage-body-chart.html">Printable body chart</a><a href="massage-soap-note-examples.html">SOAP note examples</a><a href="massage-charting-abbreviations.html">Charting abbreviations</a><a href="contact.html">Contact</a><a href="privacy.html">Privacy</a><a href="terms.html">Terms</a><a href="refund.html">Refunds</a><a href="app/">Open the app</a></span>
   </div>
 </footer>
 
@@ -418,12 +427,17 @@
   // "Reserve" = pre-payment intent. Record the plan, then move to the form.
   // Set this to the Lemon Squeezy checkout link when sales open; the founding button then goes straight to checkout.
   var CHECKOUT_URL = '';
-  if (CHECKOUT_URL) {
-    var old = document.getElementById('buy-founding');
+  var MONTHLY_CHECKOUT_URL = '';
+  function toCheckout(id, url, label, event) {
+    var old = document.getElementById(id);
     var link = document.createElement('a');
-    link.className = old.className; link.href = CHECKOUT_URL; link.textContent = 'Become a founding member';
-    link.addEventListener('click', function () { track('checkout-founding-59'); });
+    link.className = old.className; link.href = url; link.textContent = label;
+    link.addEventListener('click', function () { track(event); });
     old.replaceWith(link);
+  }
+  if (MONTHLY_CHECKOUT_URL) toCheckout('buy-monthly', MONTHLY_CHECKOUT_URL, 'Start monthly', 'checkout-monthly-9');
+  if (CHECKOUT_URL) {
+    toCheckout('buy-founding', CHECKOUT_URL, 'Become a founding member', 'checkout-founding-59');
     document.getElementById('after-plans').innerHTML = 'Secure checkout by Lemon Squeezy, which handles payment and sales tax. 30-day money-back guarantee. See the <a href="refund.html">Refund Policy</a>.';
   }
   var names = { 'founding-59': 'Founding member, $59/year', 'solo-monthly-9': 'Monthly, $9/month' };
