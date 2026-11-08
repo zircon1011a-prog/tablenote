@@ -125,8 +125,8 @@
     return licenseCall('deactivate', { license_key: l.key, instance_id: l.instanceId || '' }).then(done, done);
   }
   function upgradePanel(reason) {
-    var buy = (SALES.checkoutUrl ? '<a class="btn" href="' + esc(SALES.checkoutUrl) + '" target="_blank" rel="noopener">Become a founding member, ' + esc(SALES.priceLabel) + '</a>' : '') +
-      (SALES.lifetimeUrl ? '<a class="btn quiet" href="' + esc(SALES.lifetimeUrl) + '" target="_blank" rel="noopener">Pay once, ' + esc(SALES.lifetimeLabel) + '</a>' : '');
+    var buy = (SALES.checkoutUrl ? '<a class="btn" href="' + esc(checkoutLink(SALES.checkoutUrl)) + '" target="_blank" rel="noopener">Become a founding member, ' + esc(SALES.priceLabel) + '</a>' : '') +
+      (SALES.lifetimeUrl ? '<a class="btn quiet" href="' + esc(checkoutLink(SALES.lifetimeUrl)) + '" target="_blank" rel="noopener">Pay once, ' + esc(SALES.lifetimeLabel) + '</a>' : '');
     return '<section class="panel" id="plan-panel"><h2>' + (isPro() ? (license().expiresAt ? 'Founding member' : 'Lifetime member') : 'Your plan') + '</h2>' +
       (isPro()
         ? '<p>Unlimited clients on this device' + (license().expiresAt ? ' until ' + fmtDate(isoDay(new Date(license().expiresAt))) : '') + '. Thank you for supporting Tablenote.</p>' +
@@ -179,6 +179,7 @@
     else if (parts[0] === 'client' && client(parts[1])) parts[2] === 'print' ? renderPrintClient(parts[1]) : renderClient(parts[1]);
     else if (parts[0] === 'note' && note(parts[1])) parts[2] === 'print' ? renderPrintNote(parts[1]) : renderNote(parts[1]);
     else if (parts[0] === 'data') renderData();
+    else if (parts[0] === 'account') renderAccount();
     else renderList();
     window.scrollTo(0, 0);
   }
@@ -472,6 +473,143 @@
     document.body.appendChild(a); a.click();
     setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
   }
+
+  /* ---------- account: Firebase sign-in + one small record per therapist ----------
+     The account holds the plan (license key) and the details printed on notes, so they follow
+     the therapist to every device. Client records never leave the device. */
+  var FIREBASE = { apiKey: '', authDomain: '', projectId: '', appId: '' };
+  var FB = 'https://www.gstatic.com/firebasejs/10.12.2/';
+  var acct = { ready: false, user: null, mode: 'signin' };
+  var fbP = null, pushTimer = null;
+  function accountOn() { return !!FIREBASE.apiKey; }
+  function fbLoad() {
+    if (!fbP) fbP = Promise.all([import(FB + 'firebase-app.js'), import(FB + 'firebase-auth.js'), import(FB + 'firebase-firestore.js')]).then(function (m) {
+      var app = m[0].initializeApp(FIREBASE);
+      return { A: m[1], F: m[2], auth: m[1].getAuth(app), store: m[2].getFirestore(app) };
+    });
+    return fbP;
+  }
+  function paintAccountBtn() {
+    var b = document.getElementById('acct-btn');
+    if (!b) return;
+    b.hidden = !accountOn();
+    b.textContent = acct.user ? 'Account' : 'Sign in';
+  }
+  function acctInit() {
+    paintAccountBtn();
+    if (!accountOn()) return;
+    fbLoad().then(function (x) {
+      x.A.getRedirectResult(x.auth).catch(function () {});
+      x.A.onAuthStateChanged(x.auth, function (u) {
+        acct.user = u ? { uid: u.uid, email: u.email || '', name: u.displayName || '' } : null;
+        acct.ready = true; paintAccountBtn();
+        if (u) acctPull();
+        if (parse()[0] === 'account') renderAccount();
+      });
+    }).catch(function () { acct.ready = true; acct.offline = true; if (parse()[0] === 'account') renderAccount(); });
+  }
+  function userDoc(x) { return x.F.doc(x.store, 'users', acct.user.uid); }
+  function acctPull() {
+    fbLoad().then(function (x) {
+      return x.F.getDoc(userDoc(x)).then(function (snap) {
+        var d = snap.exists() ? snap.data() : {}, st = db.settings, changed = false;
+        ['therapist', 'credential', 'business'].forEach(function (k) { if (d[k] && !st[k]) { st[k] = d[k]; changed = true; } });
+        if (changed) save();
+        var l = license();
+        if (d.licenseKey && !(l && l.key === d.licenseKey) && navigator.onLine) {
+          activateLicense(d.licenseKey).then(function () { route(); }).catch(function () {});
+        }
+        acctPush();
+      });
+    }).catch(function () {});
+  }
+  function acctPush() {
+    if (!acct.user) return;
+    fbLoad().then(function (x) {
+      var st = db.settings, l = license();
+      var data = { email: acct.user.email, therapist: st.therapist || '', credential: st.credential || '', business: st.business || '', updatedAt: x.F.serverTimestamp() };
+      if (l && l.key) data.licenseKey = l.key;
+      return x.F.setDoc(userDoc(x), data, { merge: true });
+    }).catch(function () {});
+  }
+  function acctPushSoon() { if (!acct.user) return; clearTimeout(pushTimer); pushTimer = setTimeout(acctPush, 1500); }
+  function checkoutLink(url) {
+    if (!url || !acct.user) return url;
+    return url + (url.indexOf('?') > -1 ? '&' : '?') + 'checkout[email]=' + encodeURIComponent(acct.user.email) + '&checkout[custom][uid]=' + encodeURIComponent(acct.user.uid);
+  }
+  function authError(e) {
+    var c = (e && e.code) || '';
+    return /invalid-credential|wrong-password|user-not-found|invalid-login/.test(c) ? 'That email and password don’t match. Try again or reset your password.'
+      : /email-already-in-use/.test(c) ? 'That email already has an account. Sign in instead.'
+      : /weak-password/.test(c) ? 'Use at least 8 characters for your password.'
+      : /invalid-email/.test(c) ? 'Check the email address.'
+      : /too-many-requests/.test(c) ? 'Too many tries. Wait a few minutes and try again.'
+      : /requires-recent-login/.test(c) ? 'For safety, sign out and sign in again, then delete the account.'
+      : /network/.test(c) ? 'No connection. Notes still work; sign in when you’re back online.'
+      : /popup-closed|cancelled-popup/.test(c) ? ''
+      : 'Something went wrong. Try again.';
+  }
+  function acctMsg(t) { var m = document.getElementById('acct-msg'); if (m) m.textContent = t; }
+
+  function renderAccount() {
+    var h = '<a class="back" href="#/">← Clients</a><div class="page-head"><div><h1>Account</h1><p class="sub">Your plan and details on every device.</p></div></div>';
+    if (!accountOn()) { view.innerHTML = h + '<section class="panel"><p>Accounts are not open yet.</p></section>'; return; }
+    if (!acct.ready) { view.innerHTML = h + '<section class="panel"><p>Checking…</p></section>'; return; }
+    if (acct.offline && !acct.user) { view.innerHTML = h + '<section class="panel"><p>You’re offline. Your notes still work; sign in when you’re back online.</p></section>'; return; }
+    if (acct.user) {
+      var l = license();
+      h += '<section class="panel"><h2>Signed in</h2><p><b>' + esc(acct.user.email) + '</b></p>' +
+        '<div class="stat">Plan: ' + (isPro() ? (l.expiresAt ? 'Paid, renews or ends ' + fmtDate(isoDay(new Date(l.expiresAt))) : 'Lifetime') : 'Free') + '</div>' +
+        '<p>Your plan and the name and license number on printed notes follow this account. Sign in on another phone or computer and they come with you.</p>' +
+        '<p class="hint">Client notes are never uploaded. They stay on each device; move them with a backup file from Export.</p>' +
+        '<div class="row"><button class="btn small quiet" data-action="acct-signout">Sign out</button><button class="btn small danger" data-action="acct-delete">Delete account</button></div>' +
+        '<p class="hint" id="acct-msg" role="status"></p></section>';
+      if (!isPro() && (SALES.checkoutUrl || SALES.lifetimeUrl)) h += upgradePanel();
+      view.innerHTML = h; return;
+    }
+    var up = acct.mode === 'signup';
+    h += '<section class="panel"><h2>' + (up ? 'Create your account' : 'Sign in') + '</h2>' +
+      '<p>Keep your plan and details on every device. Client notes stay on your device and are never uploaded.</p>' +
+      '<div class="row"><button class="btn quiet" data-action="acct-google">Continue with Google</button></div>' +
+      '<form class="form" id="acct-form" novalidate style="padding:0;border:0">' +
+      '<label class="field"><span>Email</span><input type="email" name="email" autocomplete="email" required></label>' +
+      '<label class="field"><span>Password</span><input type="password" name="password" autocomplete="' + (up ? 'new-password' : 'current-password') + '" minlength="8" required></label>' +
+      '<div class="row"><button class="btn" type="submit">' + (up ? 'Create account' : 'Sign in') + '</button>' +
+      (up ? '' : '<button class="btn small quiet" type="button" data-action="acct-reset">Forgot password?</button>') + '</div></form>' +
+      '<p class="hint" id="acct-msg" role="status"></p>' +
+      '<p class="hint">' + (up ? 'Already have an account? <button class="linkish" data-action="acct-mode">Sign in</button>' : 'New here? <button class="linkish" data-action="acct-mode">Create an account</button>') + '</p></section>';
+    view.innerHTML = h;
+  }
+  function acctAction(act, a) {
+    fbLoad().then(function (x) {
+      if (act === 'acct-google') {
+        var p = new x.A.GoogleAuthProvider();
+        return x.A.signInWithPopup(x.auth, p).catch(function (e) {
+          if (/popup-blocked|operation-not-supported/.test(e.code || '')) return x.A.signInWithRedirect(x.auth, p);
+          throw e;
+        });
+      }
+      if (act === 'acct-signout') return x.A.signOut(x.auth).then(function () { acct.user = null; renderAccount(); });
+      if (act === 'acct-reset') {
+        var em = document.querySelector('#acct-form [name=email]').value.trim();
+        if (!em) { acctMsg('Type your email above, then tap Forgot password.'); return; }
+        return x.A.sendPasswordResetEmail(x.auth, em).then(function () { acctMsg('If that email has an account, a reset link is on its way.'); });
+      }
+      if (act === 'acct-delete') {
+        if (!confirmTwice(a, 'da', 'Tap again to delete your account')) return;
+        return x.F.deleteDoc(userDoc(x)).then(function () { return x.auth.currentUser.delete(); }).then(function () { acct.user = null; renderAccount(); acctMsg('Account deleted. Notes on this device are untouched.'); });
+      }
+    }).catch(function (e) { acctMsg(authError(e)); });
+  }
+  function acctSubmit(form) {
+    var em = form.elements.email.value.trim(), pw = form.elements.password.value;
+    if (!em || pw.length < 8) { acctMsg(!em ? 'Add your email.' : 'Use at least 8 characters for your password.'); return; }
+    acctMsg(acct.mode === 'signup' ? 'Creating your account…' : 'Signing in…');
+    fbLoad().then(function (x) {
+      return acct.mode === 'signup' ? x.A.createUserWithEmailAndPassword(x.auth, em, pw) : x.A.signInWithEmailAndPassword(x.auth, em, pw);
+    }).catch(function (e) { acctMsg(authError(e)); });
+  }
+
   /* ---------- import clients from CSV ---------- */
   function parseCSV(text) {
     text = text.replace(/^\uFEFF/, '');
@@ -681,6 +819,10 @@
       window.print();
     } else if (act === 'backup') {
       backup(); if (parse()[0] === 'data') renderData(); else renderList();
+    } else if (/^acct-(google|signout|reset|delete)$/.test(act)) {
+      acctAction(act, a);
+    } else if (act === 'acct-mode') {
+      acct.mode = acct.mode === 'signup' ? 'signin' : 'signup'; renderAccount();
     } else if (act === 'auto-pick') {
       autoPick();
     } else if (act === 'auto-resume') {
@@ -695,6 +837,7 @@
       if (!key) { msg.textContent = 'Paste the license key from your receipt email.'; input.focus(); return; }
       a.disabled = true; msg.textContent = 'Checking your key…';
       activateLicense(key).then(function () {
+        acctPush();
         var back = parse()[0] === 'client' ? '#/client/new' : null;
         if (back) renderNewClient(); else renderData();
         var m = document.getElementById('license-msg'); if (m) m.textContent = 'Activated. Unlimited clients are unlocked on this device.';
@@ -743,7 +886,7 @@
       return;
     }
     var st = t.getAttribute('data-setting');
-    if (st) { db.settings[st] = t.value; saveSoon(); }
+    if (st) { db.settings[st] = t.value; saveSoon(); acctPushSoon(); }
   });
 
   view.addEventListener('change', function (e) {
@@ -778,6 +921,7 @@
   });
 
   view.addEventListener('submit', function (e) {
+    if (e.target.id === 'acct-form') { e.preventDefault(); acctSubmit(e.target); return; }
     if (e.target.id !== 'client-form') return;
     e.preventDefault();
     var el = e.target.elements;
@@ -807,6 +951,7 @@
   if (!storageOK) showSave();
   route();
   autoInit();
+  acctInit();
   if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) navigator.serviceWorker.register('sw.js').catch(function () {});
   revalidateLicense();
 })();

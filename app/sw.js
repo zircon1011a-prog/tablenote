@@ -1,6 +1,6 @@
 /* Tablenote offline support: the app opens without a connection.
    Notes are never cached here; they live in the page's own storage. */
-var CACHE = 'tablenote-app-v2';
+var CACHE = 'tablenote-app-v3';
 var CORE = ['./', 'index.html', 'app.css', 'app.js', 'manifest.webmanifest', '../assets/brand.css', '../assets/bodychart.js', '../assets/theme.js', '../assets/icon.svg'];
 
 self.addEventListener('install', function (e) {
@@ -15,7 +15,7 @@ self.addEventListener('fetch', function (e) {
   var req = e.request;
   if (req.method !== 'GET') return;
   var url = new URL(req.url);
-  var fonts = /fonts\.(googleapis|gstatic)\.com$/.test(url.hostname);
+  var fonts = /fonts\.(googleapis|gstatic)\.com$/.test(url.hostname) || (url.hostname === 'www.gstatic.com' && url.pathname.indexOf('/firebasejs/') === 0);
   if (url.origin !== location.origin && !fonts) return; // license checks and anything else go straight to the network
   if (fonts) {
     // Fonts rarely change: serve the saved copy, refresh it in the background.

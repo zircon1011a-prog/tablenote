@@ -168,3 +168,7 @@ details.history summary { cursor: pointer; padding: 12px 0; font-weight: 600; }
 .paper .precord { font-size: 11px; color: #444; padding-top: 14px; }
 .paper .phistory { margin-top: 10px; font-size: 11px; color: #333; }
 .paper .phistory .version { border-top: 1px dashed #999; padding: 8px 0; }
+
+/* account */
+.linkish { background: none; border: 0; padding: 0; font: inherit; color: var(--accent); text-decoration: underline; cursor: pointer; }
+@media (max-width: 420px) { .bar-right { gap: 8px; } }
