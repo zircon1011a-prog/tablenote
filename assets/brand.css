@@ -94,3 +94,8 @@ a { color: var(--accent); }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
 }
+
+/* appearance switch */
+.theme-btn { display: inline-flex; align-items: center; gap: 6px; }
+.theme-btn svg { width: 16px; height: 16px; flex: none; }
+@media (max-width: 420px) { .theme-btn span { display: none; } }

@@ -15,6 +15,7 @@
 <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<script>try{var t=localStorage.getItem('tablenote.theme');if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t);}catch(e){}</script>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <link rel="stylesheet" href="assets/brand.css">
 <!-- Visit counting (optional): paste the GoatCounter snippet from PUBLISH.md here. Landing page only, never inside /app. -->
@@ -146,6 +147,7 @@
       <a href="#how">How it works</a>
       <a href="#pricing">Pricing</a>
       <a href="#faq">FAQ</a>
+      <button class="btn small quiet theme-btn" type="button" aria-label="Appearance: match system"></button>
       <a class="btn small" href="app/" data-track="nav-open-app">Open the app</a>
     </nav>
   </div>
@@ -493,5 +495,6 @@
   });
 })();
 </script>
+<script src="assets/theme.js"></script>
 </body>
 </html>

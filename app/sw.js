@@ -1,7 +1,7 @@
 /* Tablenote offline support: the app opens without a connection.
    Notes are never cached here; they live in the page's own storage. */
-var CACHE = 'tablenote-app-v1';
-var CORE = ['./', 'index.html', 'app.css', 'app.js', 'manifest.webmanifest', '../assets/brand.css', '../assets/bodychart.js', '../assets/icon.svg'];
+var CACHE = 'tablenote-app-v2';
+var CORE = ['./', 'index.html', 'app.css', 'app.js', 'manifest.webmanifest', '../assets/brand.css', '../assets/bodychart.js', '../assets/theme.js', '../assets/icon.svg'];
 
 self.addEventListener('install', function (e) {
   e.waitUntil(caches.open(CACHE).then(function (c) { return c.addAll(CORE); }).then(function () { return self.skipWaiting(); }));

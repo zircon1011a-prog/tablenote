@@ -271,8 +271,8 @@
       h += clientForm(c);
     } else {
       h += '<dl class="facts">' +
-        (c.phone ? '<div><dt class="label">Phone</dt><dd>' + esc(c.phone) + '</dd></div>' : '') +
-        (c.email ? '<div><dt class="label">Email</dt><dd>' + esc(c.email) + '</dd></div>' : '') +
+        (c.phone ? '<div><dt class="label">Phone</dt><dd><a href="tel:' + esc(c.phone.replace(/[^0-9+]/g, '')) + '">' + esc(c.phone) + '</a></dd></div>' : '') +
+        (c.email ? '<div><dt class="label">Email</dt><dd><a href="mailto:' + esc(c.email) + '">' + esc(c.email) + '</a></dd></div>' : '') +
         '<div><dt class="label">Health history</dt><dd>' + (c.history ? esc(c.history) : '<span style="color:var(--ink-2)">Not recorded</span>') + '</dd></div></dl>' +
         '<div class="row"><button class="btn small quiet" data-action="edit-client">Edit details</button>' + (ns.length ? '<a class="btn small quiet" href="#/client/' + id + '/print">Print or save all visits</a>' : '') + '</div>';
     }
@@ -306,6 +306,8 @@
     h += '<div class="page-head"><div><h1>SOAP note</h1><p class="sub">' + esc(c.name) + (n.example ? ' · <span class="tag">Example</span>' : '') + '</p></div></div>';
     if (c.contra) h += '<div class="caution"><span class="label">Precautions</span>' + esc(c.contra) + '</div>';
     h += '<p class="hint amend" id="amend-state" role="status">' + amendLine(n) + '</p>';
+    var lastText = notesFor(c.id).filter(function (x) { return x.id !== id && x.date <= n.date && (x.s || x.o || x.a || x.p); })[0];
+    if (lastText && isBlank(n)) h += '<div class="notice" id="repeat-box"><p>Same as last time? Start from the notes of ' + fmtDate(lastText.date) + ' and change what is different.</p><button class="btn small" data-action="repeat-last" data-from="' + lastText.id + '">Start from last visit</button></div>';
     h += '<div class="sheet">';
     h += '<div class="sheet-head">' +
       '<label class="field wide"><span class="label">Date</span><input type="date" data-field="date" id="nf-date" value="' + esc(n.date) + '"></label>' +
@@ -669,6 +671,12 @@
       var from = note(a.getAttribute('data-from')), n3 = note(openNoteId);
       n3.marks = from.marks.map(function (m) { return Object.assign({}, m, { id: uid() }); });
       chart.setMarks(n3.marks); renderMarks(n3); touch(n3); a.parentNode.remove();
+    } else if (act === 'repeat-last') {
+      var src = note(a.getAttribute('data-from')), dst = note(openNoteId);
+      ['s', 'o', 'a', 'p'].forEach(function (k) { dst[k] = src[k] || ''; });
+      ['modality', 'duration', 'pressure'].forEach(function (k) { if (src[k] != null) dst[k] = src[k]; });
+      if (!(dst.marks && dst.marks.length) && src.marks) dst.marks = src.marks.map(function (m) { return Object.assign({}, m, { id: uid() }); });
+      touch(dst); save(); renderNote(dst.id);
     } else if (act === 'print') {
       window.print();
     } else if (act === 'backup') {

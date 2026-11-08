@@ -10,6 +10,7 @@
 <meta name="theme-color" content="#12141b" media="(prefers-color-scheme: dark)">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Tablenote">
+<script>try{var t=localStorage.getItem('tablenote.theme');if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t);}catch(e){}</script>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="../assets/icon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -28,11 +29,13 @@
     </a>
     <div class="bar-right">
       <span class="save-state" id="save-state" role="status"><span>Saved on this device</span></span>
+      <button class="btn small quiet theme-btn" type="button" id="theme-btn" aria-label="Appearance: match system"></button>
       <a class="btn small quiet" href="#/data">Export</a>
     </div>
   </div>
 </header>
 <main class="view" id="view"></main>
+<script src="../assets/theme.js"></script>
 <script src="../assets/bodychart.js"></script>
 <script src="app.js"></script>
 </body>
