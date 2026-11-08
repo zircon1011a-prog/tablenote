@@ -1,0 +1,560 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Tablenote — Notas SOAP para terapeutas de masaje independientes</title>
+<link rel="canonical" href="https://zircon1011a-prog.github.io/tablenote/es/">
+<link rel="alternate" hreflang="en" href="https://zircon1011a-prog.github.io/tablenote/">
+<link rel="alternate" hreflang="fr-CA" href="https://zircon1011a-prog.github.io/tablenote/fr/">
+<link rel="alternate" hreflang="es" href="https://zircon1011a-prog.github.io/tablenote/es/">
+<link rel="alternate" hreflang="x-default" href="https://zircon1011a-prog.github.io/tablenote/">
+<meta name="description" content="Notas SOAP para terapeutas de masaje, en tu teléfono. Mapa corporal de frente y espalda, exporta en PDF o CSV cuando quieras. Gratis hasta 3 clientes.">
+<meta property="og:title" content="Tablenote — Notas SOAP para terapeutas de masaje independientes">
+<meta property="og:image" content="https://zircon1011a-prog.github.io/tablenote/assets/pitch/tablenote-hero.png">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://zircon1011a-prog.github.io/tablenote/es/">
+<meta property="og:locale" content="es_419">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:locale:alternate" content="fr_CA">
+<meta name="twitter:card" content="summary_large_image">
+<meta property="og:description" content="Solo documentación clínica, nada más. Notas SOAP en el teléfono, un mapa corporal que tocas y exportación completa cuando quieras.">
+<link rel="icon" href="../assets/icon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<script>try{var t=localStorage.getItem('tablenote.theme');if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t);}catch(e){}</script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="../assets/brand.css">
+<style>
+  .wrap { max-width: 1120px; margin: 0 auto; padding-left: var(--gutter-l); padding-right: var(--gutter-r); }
+
+  .top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: color-mix(in srgb, var(--paper) 92%, transparent); backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); }
+  .top .wrap { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-block: 12px; }
+  .top nav { display: flex; align-items: center; gap: 20px; }
+  .top nav a:not(.btn) { color: var(--ink-2); text-decoration: none; font-size: 15px; }
+  .top nav a:not(.btn):hover { color: var(--ink); }
+  @media (max-width: 720px) { .top nav a:not(.btn) { display: none; } }
+
+  .hero .wrap { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); gap: 48px; align-items: center; padding-block: 64px 72px; }
+  @media (max-width: 900px) { .hero .wrap { grid-template-columns: minmax(0, 1fr); gap: 36px; padding-block: 40px 56px; } }
+  .hero h1 { font-size: clamp(40px, 6.4vw, 76px); line-height: 0.98; font-weight: 800; letter-spacing: -0.035em; margin-top: 14px; }
+  .hero h1 em { font-style: normal; color: var(--accent); }
+  .hero .sub { font-size: 19px; color: var(--ink-2); max-width: 34em; margin: 22px 0 0; }
+  .cta-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 28px; }
+  .fine { font-size: 14px; color: var(--ink-2); margin: 14px 0 0; display: flex; gap: 8px; align-items: flex-start; }
+  .fine svg { flex: 0 0 auto; margin-top: 3px; }
+
+  /* The demo card reads like a paper chart form */
+  .chart-form { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; box-shadow: 0 1px 0 var(--line), 0 18px 40px -24px color-mix(in srgb, var(--accent) 45%, transparent); overflow: hidden; }
+  .cf-head { display: grid; grid-template-columns: repeat(4, minmax(0, auto)); justify-content: space-between; gap: 6px 14px; padding: 14px 18px; border-bottom: 1px solid var(--line); }
+  @media (max-width: 480px) { .cf-head { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  .cf-head div { min-width: 0; }
+  .cf-head b { display: block; font-size: 15px; font-weight: 700; margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .cf-chart { padding: 14px 18px 6px; }
+  .cf-chart .bodychart { width: 100%; height: auto; display: block; max-height: 420px; cursor: crosshair; touch-action: manipulation; }
+  .cf-tools { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; padding: 0 18px 8px; }
+  .cf-hint { font-size: 13px; color: var(--ink-2); margin: 0; padding: 0 18px 10px; }
+  .cf-marks { list-style: none; margin: 0; padding: 10px 18px 14px; border-top: 1px dashed var(--line); display: flex; flex-wrap: wrap; gap: 6px 14px; min-height: 44px; font-size: 14px; }
+  .cf-marks li { display: inline-flex; align-items: center; gap: 6px; }
+  .cf-marks svg { width: 13px; height: 13px; }
+  .cf-soap { border-top: 1px solid var(--line); }
+  .cf-row { display: grid; grid-template-columns: 34px minmax(0, 1fr); border-top: 1px solid var(--line); }
+  .cf-row:first-child { border-top: 0; }
+  .cf-row .k { font: 500 13px/1 var(--f-mono); color: var(--accent); display: grid; place-items: center; border-right: 1px solid var(--line); }
+  .cf-row p { margin: 0; padding: 9px 14px; font-size: 14.5px; line-height: 1.45; }
+  .tag { display: inline-block; font: 500 11px/1 var(--f-mono); letter-spacing: 0.06em; text-transform: uppercase; padding: 4px 6px; border-radius: 4px; background: var(--accent-soft); color: var(--accent); }
+
+  section.band { border-top: 1px solid var(--line); scroll-margin-top: 64px; }
+  section.band > .wrap { padding-block: 72px; }
+  @media (max-width: 720px) { section.band > .wrap { padding-block: 52px; } }
+  .sec-head { display: grid; gap: 12px; max-width: 46em; margin-bottom: 36px; }
+  .sec-head h2 { font-size: clamp(30px, 4vw, 44px); line-height: 1.05; font-weight: 750; }
+  .sec-head p { margin: 0; color: var(--ink-2); font-size: 18px; }
+  .sec-head.flush { margin-bottom: 0; }
+
+  .three { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0; border-top: 2px solid var(--ink); }
+  .three article { padding: 22px 24px 8px 0; display: grid; gap: 10px; align-content: start; }
+  .three article + article { padding-left: 24px; border-left: 1px solid var(--line); }
+  @media (max-width: 860px) {
+    .three { grid-template-columns: minmax(0, 1fr); }
+    .three article, .three article + article { padding: 22px 0; border-left: 0; border-top: 1px solid var(--line); }
+    .three article:first-child { border-top: 0; }
+  }
+  .three h3 { font-size: 23px; line-height: 1.15; font-weight: 700; }
+  .three p { margin: 0; color: var(--ink-2); }
+  .quote { padding-top: 10px; border-top: 1px dashed var(--line); font-size: 14px; }
+  .quote b { color: var(--ink); font-weight: 700; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chips span { font-size: 13px; padding: 5px 9px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); }
+  .regions { font: 400 13px/1.7 var(--f-mono); color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; }
+  .files { display: grid; gap: 6px; }
+  .files div { display: flex; justify-content: space-between; gap: 10px; font: 400 13px/1.3 var(--f-mono); background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 9px 12px; min-width: 0; }
+  .files div span:first-child { overflow-wrap: anywhere; }
+  .files div span:last-child { color: var(--ink-2); white-space: nowrap; }
+
+  .split { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 40px; align-items: start; }
+  @media (max-width: 860px) { .split { grid-template-columns: minmax(0, 1fr); gap: 24px; } }
+  .not { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line); }
+  .not li { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 14px 0; border-bottom: 1px solid var(--line); font-size: 18px; }
+  .not li s { text-decoration-thickness: 1.5px; color: var(--ink-2); }
+  .not li span { font: 500 12px/1.6 var(--f-mono); color: var(--ink-2); text-transform: uppercase; letter-spacing: 0.06em; text-align: right; }
+  .not li.yes { font-weight: 700; }
+  .not li.yes span { color: var(--accent); }
+
+  .data { margin: 0; border-top: 1px solid var(--line); }
+  .data > div { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 16px; padding: 14px 0; border-bottom: 1px solid var(--line); }
+  @media (max-width: 480px) { .data > div { grid-template-columns: minmax(0, 1fr); gap: 4px; } }
+  .data dt { padding-top: 4px; }
+  .data dd { margin: 0; }
+
+  .plans { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+  @media (max-width: 1080px) { .plans { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (max-width: 620px) { .plans { grid-template-columns: minmax(0, 1fr); } }
+  .plan { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 22px; display: grid; grid-template-rows: auto auto 1fr auto; gap: 12px; }
+  .plan.main { border: 2px solid var(--accent); }
+  .plan .price { font: 800 44px/1 var(--f-display); letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
+  .plan .price small { font: 400 16px/1 var(--f-body); color: var(--ink-2); letter-spacing: 0; }
+  .plan ul { margin: 0; padding-left: 18px; color: var(--ink-2); display: grid; gap: 4px; align-content: start; }
+  .plan .btn { width: 100%; }
+  .after-plans { color: var(--ink-2); font-size: 15px; margin: 18px 0 0; }
+
+  form.lead { display: grid; gap: 14px; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 22px; }
+  form.lead label { display: grid; gap: 6px; font-weight: 700; font-size: 15px; }
+  form.lead input, form.lead select { min-height: 48px; padding: 0 14px; border-radius: 8px; border: 1px solid var(--line); background: var(--paper); color: var(--ink); font: 400 16px var(--f-body); width: 100%; }
+  .ask { border: 0; margin: 0; padding: 0; display: grid; gap: 8px; min-width: 0; }
+  .ask legend { font-weight: 700; font-size: 15px; padding: 0; margin-bottom: 6px; }
+  form.lead .ask label { display: flex; align-items: center; gap: 10px; font-weight: 400; min-height: 44px; padding: 8px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--paper); cursor: pointer; }
+  form.lead .ask label:has(input:checked) { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+  form.lead .ask input { flex: 0 0 auto; width: 18px; height: 18px; min-height: 0; padding: 0; margin: 0; accent-color: var(--accent); }
+  .chosen { font-size: 15px; color: var(--accent); font-weight: 700; margin: 0; }
+  .thanks { margin: 0; padding: 12px 14px; border-radius: 8px; background: var(--accent-soft); color: var(--ink); font-weight: 700; }
+
+  .faq details { border-top: 1px solid var(--line); }
+  .faq details:last-of-type { border-bottom: 1px solid var(--line); }
+  .faq summary { cursor: pointer; list-style: none; padding: 18px 36px 18px 0; font: 700 19px/1.3 var(--f-display); position: relative; }
+  .faq summary::-webkit-details-marker { display: none; }
+  .faq summary::after { content: "+"; position: absolute; right: 4px; top: 16px; font: 400 24px/1 var(--f-mono); color: var(--ink-2); }
+  .faq details[open] summary::after { content: "−"; }
+  .faq details p { margin: 0 0 20px; color: var(--ink-2); max-width: 42em; }
+
+  footer { border-top: 1px solid var(--line); }
+  footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; justify-content: space-between; align-items: center; padding-block: 28px 40px; color: var(--ink-2); font-size: 14px; }
+
+  /* Language switch (EN · FR · ES) */
+  .lang { display: flex; align-items: center; font: 500 13px/1 var(--f-mono); color: var(--ink-2); white-space: nowrap; }
+  .top nav .lang a:not(.btn) { display: inline-block; padding: 10px 3px; font: inherit; color: var(--ink-2); text-decoration: none; }
+  .top nav .lang a:not(.btn):hover { color: var(--ink); }
+  .top nav .lang a[aria-current] { color: var(--ink); font-weight: 700; text-decoration: underline; text-underline-offset: 4px; }
+  @media (max-width: 720px) { .top nav { gap: 10px; } }
+  @media (max-width: 400px) { .top .wrap { gap: 6px; } .top nav { gap: 4px; } .lang { font-size: 12px; } .lang .sep { display: none; } .top nav .lang a:not(.btn) { padding-inline: 2px; } .top nav .btn.small { padding: 0 9px; white-space: nowrap; } }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <a class="wordmark" href="#top" aria-label="Inicio de Tablenote">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="4.6" rx="3.6" ry="2.6" fill="var(--accent)"/><rect x="5.5" y="9" width="13" height="13.5" rx="3" fill="none" stroke="var(--ink)" stroke-width="2"/><path d="M8.5 13.5h7M8.5 17h4.5" stroke="var(--ink)" stroke-width="1.6" stroke-linecap="round"/></svg>
+      Tablenote
+    </a>
+    <nav aria-label="Menú principal">
+      <a href="#how">Cómo funciona</a>
+      <a href="#pricing">Precios</a>
+      <a href="#faq">Preguntas</a>
+      <span class="lang" role="group" aria-label="Idioma"><a href="../" lang="en" hreflang="en" title="English">EN</a><span class="sep" aria-hidden="true">·</span><a href="../fr/" lang="fr-CA" hreflang="fr-CA" title="Français">FR</a><span class="sep" aria-hidden="true">·</span><a href="./" lang="es" hreflang="es" aria-current="page">ES</a></span>
+      <button class="btn small quiet theme-btn" type="button" aria-label="Apariencia: según el sistema"></button>
+      <a class="btn small" href="../app/" data-track="nav-open-app">Abrir la app</a>
+    </nav>
+  </div>
+</header>
+
+<main id="top">
+  <section class="hero">
+    <div class="wrap">
+      <div>
+        <span class="label">Para masajistas y terapeutas corporales independientes</span>
+        <h1>Notas SOAP listas <em>antes de tu próximo cliente.</em></h1>
+        <p class="sub">Tablenote sirve para documentar tus sesiones y nada más. Escribe notas SOAP en tu teléfono, toca un mapa corporal de frente y espalda, y exporta todos tus registros cuando quieras. Sigue usando la app de reservas que ya tienes.</p>
+        <div class="cta-row">
+          <a class="btn" href="../app/" data-track="hero-try-app">Pruébalo gratis, sin registro</a>
+          <a class="btn ghost" href="#pricing" data-track="hero-pricing">Ver precios</a>
+        </div>
+        <p class="fine"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><rect x="3" y="7" width="10" height="7" rx="1.5" fill="none" stroke="var(--ink-2)" stroke-width="1.5"/><path d="M5.5 7V5a2.5 2.5 0 0 1 5 0v2" fill="none" stroke="var(--ink-2)" stroke-width="1.5"/></svg>Durante la beta, tus notas se quedan en tu dispositivo. No se envía nada a nuestros servidores.</p>
+      </div>
+
+      <div class="chart-form" aria-label="Ejemplo interactivo de una nota SOAP en Tablenote">
+        <div class="cf-head">
+          <div><span class="label">Cliente</span><b>Jordan L.</b></div>
+          <div><span class="label">Fecha</span><b>14 oct</b></div>
+          <div><span class="label">Sesión</span><b>60 min</b></div>
+          <div><span class="label">Técnica</span><b>Tejido profundo</b></div>
+        </div>
+        <div class="cf-chart" id="demo-chart"></div>
+        <div class="cf-tools">
+          <div class="legend" role="group" aria-label="Tipo de marca" id="demo-legend"></div>
+          <span class="tag">Pruébalo</span>
+        </div>
+        <p class="cf-hint">Toca la figura para agregar una marca. Toca una marca para quitarla.</p>
+        <ul class="cf-marks" id="demo-marks" aria-live="polite"></ul>
+        <div class="cf-soap">
+          <div class="cf-row"><span class="k">S</span><p>Rigidez en el cuello al despertar, peor después de trabajar en el escritorio. Dolor 6/10.</p></div>
+          <div class="cf-row"><span class="k">O</span><p>Hipertonía en trapecio superior bilateral; punto gatillo en romboides derechos.</p></div>
+          <div class="cf-row"><span class="k">A</span><p>Buena respuesta del tejido. Dolor 3/10 después de la sesión.</p></div>
+          <div class="cf-row"><span class="k">P</span><p>Volver en 2 semanas. Estiramiento en casa: trapecio superior, 3 × 30 s al día.</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="band" id="how">
+    <div class="wrap">
+      <div class="sec-head">
+        <span class="label">Cómo funciona</span>
+        <h2>Tres cosas que tu software de gestión hace mal.</h2>
+        <p>La mayoría del software para terapeutas de masaje es una plataforma de reservas y pagos con notas SOAP agregadas al final. Tablenote empieza por la nota.</p>
+      </div>
+      <div class="three">
+        <article>
+          <span class="label">Móvil</span>
+          <h3>Escríbela en tu teléfono, entre sesiones.</h3>
+          <p>Toca frases comunes en vez de escribirlas, y cada cambio se guarda al instante. Cinco minutos entre clientes son suficientes.</p>
+          <div class="chips" aria-label="Ejemplos de frases rápidas"><span>Hipertonía</span><span>Movilidad limitada</span><span>Punto gatillo</span><span>Volver en 2 semanas</span></div>
+          <p class="quote">La queja que más escuchamos: <b>“tienes que tener una computadora”.</b></p>
+        </article>
+        <article>
+          <span class="label">Mapa corporal</span>
+          <h3>Un mapa corporal que sabe anatomía.</h3>
+          <p>Toca la figura anterior o posterior y Tablenote nombra la región, según la izquierda y la derecha del cliente. Marca dolor, tensión y zonas que hay que evitar.</p>
+          <div class="regions">dolor: trapecio superior (izq.)<br>tensión: cuadrado lumbar (der.)<br>evitar: fosa poplítea (izq.)</div>
+          <p class="quote">Lo que ofrecen otras apps: <b>“la opción de importar fotos”.</b></p>
+        </article>
+        <article>
+          <span class="label">Exportar</span>
+          <h3>Tus registros se van contigo.</h3>
+          <p>Guarda cualquier visita en PDF. Descarga todas tus notas como hoja de cálculo o como archivo de respaldo completo, cuando quieras y sin costo. Si editas una nota después del día de la visita, se conserva la versión anterior, con la hora y tu nombre, en pantalla y en la impresión.</p>
+          <div class="files"><div><span>jordan-lee-2026-10-14.pdf</span><span>1 visita</span></div><div><span>tablenote-notes.csv</span><span>todas las notas</span></div><div><span>tablenote-backup.json</span><span>todo</span></div></div>
+          <p class="quote">Lo que más temen los terapeutas: <b>“que tengan tus datos de rehén”.</b></p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="band">
+    <div class="wrap split">
+      <div class="sec-head flush">
+        <span class="label">Lo que no incluye</span>
+        <h2>Quédate con tu app de reservas. Tablenote solo documenta.</h2>
+        <p>Las suites todo en uno suelen costar entre 49 y 119 USD al mes porque incluyen herramientas que quizá ya tienes. Si tu agenda funciona, solo te faltan las notas.</p>
+      </div>
+      <ul class="not">
+        <li><s>Reservas y calendario</s><span>Usa el tuyo</span></li>
+        <li><s>Pagos con tarjeta</s><span>Usa tu terminal</span></li>
+        <li><s>Correos de marketing</s><span>No incluido</span></li>
+        <li><s>Facturación a seguros</s><span>No incluida</span></li>
+        <li class="yes">Notas SOAP, mapa corporal, historial de salud, exportación<span>Incluido</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="band">
+    <div class="wrap split">
+      <div class="sec-head flush">
+        <span class="label">Dónde viven tus notas</span>
+        <h2>Tus notas se quedan contigo.</h2>
+        <p>Tablenote guarda las notas en tu navegador, en tu propio dispositivo. Nunca las recibimos, así que no podemos perderlas ni filtrarlas.</p>
+      </div>
+      <dl class="data">
+        <div><dt class="label">Guardado</dt><dd>Solo en este dispositivo. Si borras los datos del navegador, se borran las notas, así que guarda un respaldo.</dd></div>
+        <div><dt class="label">Respaldo</dt><dd>En una computadora, elige una sola vez una carpeta de Google Drive, Dropbox o iCloud y cada cambio se guarda ahí. En un teléfono, con un toque guardas un respaldo en iCloud o Drive.</dd></div>
+        <div><dt class="label">Siempre</dt><dd>Exportación completa de todos los registros en todos los planes, incluso después de cancelar.</dd></div>
+      </dl>
+    </div>
+  </section>
+
+  <section class="band" id="pricing">
+    <div class="wrap">
+      <div class="sec-head">
+        <span class="label">Precios</span>
+        <h2>Gratis para empezar. Un precio justo cuando crezcas.</h2>
+        <p>Documenta hasta 3 clientes gratis. Después, suscríbete o paga una sola vez y es tuya. Sin aumentos de precio en lo que ya compraste. Precios en dólares estadounidenses (USD).</p>
+      </div>
+      <div class="plans">
+        <div class="plan">
+          <span class="label">Gratis</span>
+          <div class="price">$0</div>
+          <ul><li>Hasta 3 clientes</li><li>Notas SOAP y mapa corporal</li><li>Exportación en PDF, CSV y respaldo completo</li></ul>
+          <a class="btn ghost" href="../app/" data-track="plan-free-open-app">Abrir la app</a>
+        </div>
+        <div class="plan main">
+          <span class="label">Miembro fundador</span>
+          <div class="price">$59<small> USD / año</small></div>
+          <ul><li>Clientes y notas ilimitados</li><li>Úsala en hasta 3 de tus dispositivos</li><li>Precio fijo mientras sigas suscrito</li><li>Garantía de devolución de 30 días</li></ul>
+          <button class="btn" type="button" data-plan="founding-59" id="buy-founding">Reservar a $59 USD/año</button>
+        </div>
+        <div class="plan">
+          <span class="label">Mensual</span>
+          <div class="price">$9<small> USD / mes</small></div>
+          <ul><li>Clientes y notas ilimitados</li><li>Cancela cuando quieras</li></ul>
+          <button class="btn ghost" type="button" data-plan="solo-monthly-9" id="buy-monthly">Reservar a $9 USD/mes</button>
+        </div>
+        <div class="plan">
+          <span class="label">De por vida</span>
+          <div class="price">$79<small> USD, pago único</small></div>
+          <ul><li>Clientes y notas ilimitados</li><li>Pagas una vez, sin suscripción</li><li>Úsala en hasta 3 de tus dispositivos</li><li>Garantía de devolución de 30 días</li></ul>
+          <button class="btn ghost" type="button" data-plan="lifetime-79" id="buy-lifetime">Reservar de por vida, $79 USD</button>
+        </div>
+      </div>
+      <p class="after-plans" id="after-plans">Los planes de pago abren pronto. Para reservar solo necesitas un correo electrónico; no se cobra nada. Consulta la <a href="../refund.html" hreflang="en">Política de reembolsos</a> (EN).</p>
+    </div>
+  </section>
+
+  <section class="band" id="signup">
+    <div class="wrap split">
+      <div class="sec-head flush">
+        <span class="label">Acceso anticipado</span>
+        <h2>Asegura tu precio antes de que abran los planes de pago.</h2>
+        <p>Te escribiremos una sola vez, cuando abran los planes de pago y antes de cobrar nada. Sin boletines.</p>
+      </div>
+      <!-- Submissions are relayed by FormSubmit to the owner's inbox. The action uses FormSubmit's alias, not the address. -->
+      <form class="lead" id="lead" action="https://formsubmit.co/ajax/a31453b1dc8c84718be297694be344b1" method="POST">
+        <input type="hidden" name="_subject" value="Tablenote early access sign-up (ES)">
+        <input type="hidden" name="_template" value="table">
+        <input type="hidden" name="lang" value="es">
+        <input type="text" name="_honey" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0">
+        <p class="chosen" id="lead-chosen" hidden></p>
+        <label for="lead-email">Correo electrónico
+          <input type="email" id="lead-email" name="email" autocomplete="email" placeholder="tu@tuconsultorio.com" required>
+        </label>
+        <label for="lead-current">¿Con qué documentas tus sesiones hoy?
+          <select id="lead-current" name="current_tool">
+            <option value="">Elige una opción (opcional)</option>
+            <option value="Paper forms">Formularios en papel</option>
+            <option>ClinicSense</option>
+            <option>MassageBook</option>
+            <option>SimplePractice</option>
+            <option>Jane</option>
+            <option value="Notes app / Google Docs">App de notas / Google Docs</option>
+            <option value="Something else">Otra cosa</option>
+          </select>
+        </label>
+        <fieldset class="ask" id="lead-allinone">
+          <legend>¿Pagarías más si Tablenote también manejara reservas y pagos?</legend>
+          <label for="aio-no"><input type="radio" id="aio-no" name="wants_booking" value="no-notes-only"> No, solo necesito las notas</label>
+          <label for="aio-maybe"><input type="radio" id="aio-maybe" name="wants_booking" value="maybe"> Tal vez, si fuera sencillo</label>
+          <label for="aio-yes"><input type="radio" id="aio-yes" name="wants_booking" value="yes-all-in-one"> Sí, quiero una sola app para todo</label>
+        </fieldset>
+        <input type="hidden" name="plan" id="lead-plan" value="">
+        <button class="btn" type="submit" id="lead-submit">Unirme al acceso anticipado</button>
+        <p class="thanks" id="lead-thanks" hidden>Ya estás en la lista. Te escribiremos cuando abran los planes de pago.</p>
+        <p class="hint" style="margin:0;font-size:13px;color:var(--ink-2)">Solo te escribimos sobre Tablenote. Consulta nuestra <a href="../privacy.html" hreflang="en">Política de privacidad</a> (EN).</p>
+      </form>
+    </div>
+  </section>
+
+  <section class="band faq" id="faq">
+    <div class="wrap">
+      <div class="sec-head"><span class="label">Preguntas</span><h2>Antes de probarla</h2></div>
+      <details>
+        <summary>¿Tablenote cumple con HIPAA?</summary>
+        <p>Tus notas nunca salen de tu dispositivo, así que nunca recibimos ni guardamos información de salud de tus clientes. Los respaldos van solo a donde tú elijas, como tu propia nube.</p>
+      </details>
+      <details>
+        <summary>¿Funciona en mi teléfono?</summary>
+        <p>Sí. Funciona en Safari o Chrome en cualquier teléfono, tableta o computadora portátil reciente. Agrégala a tu pantalla de inicio y se abre como una app, incluso sin señal en la sala de tratamiento.</p>
+      </details>
+      <details>
+        <summary>¿Puedo traer las notas de mi software actual?</summary>
+        <p>Tu lista de clientes, sí. Exporta tus clientes como archivo CSV desde Square, tu app de reservas o una hoja de cálculo; luego abre «Exportar» en Tablenote y elige «Importar clientes». Se pasan los nombres, teléfonos y correos. Las notas de visitas anteriores se quedan en tu software anterior, así que guárdalas como PDF antes de dejarlo.</p>
+      </details>
+      <details>
+        <summary>¿Qué pasa con mis notas si dejo de pagar?</summary>
+        <p>Conservas el acceso a la exportación. Descarga todas tus notas en PDF, CSV o un archivo de respaldo completo cuando quieras, incluso después de cancelar.</p>
+      </details>
+      <details>
+        <summary>¿Qué pasa si cambio una nota más tarde?</summary>
+        <p>Durante las primeras 24 horas, la nota es un borrador, así que puedes terminarla después de tu último cliente. Después, cualquier cambio conserva la versión anterior con la fecha, la hora y tu nombre, y el PDF imprime el historial completo de cambios. Muchas juntas de licencias y aseguradoras esperan registros que muestren qué se cambió y cuándo; consulta las normas de tu estado, país o asociación.</p>
+      </details>
+      <details>
+        <summary>Uso Square para las reservas. ¿Puedo usar Tablenote al mismo tiempo?</summary>
+        <p>Sí. No se conectan entre sí, y no hace falta. Deja las reservas y los pagos en Square, y escribe tus notas aquí.</p>
+      </details>
+      <details>
+        <summary>¿Puedo dictar mis notas? ¿Usa IA?</summary>
+        <p>Tablenote no tiene IA y nunca graba una sesión. Para dictar una nota, toca el micrófono del teclado de tu teléfono. Ese dictado lo hace el software de tu propio teléfono, no Tablenote.</p>
+      </details>
+      <details>
+        <summary>¿Maneja reservas o reclamaciones a seguros?</summary>
+        <p>No. Tablenote es solo para documentar. Sigue usando tus herramientas de reservas y pagos, y usa Tablenote para las notas.</p>
+      </details>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>Tablenote está en beta. Reservar un plan solo registra tu interés; no se cobra nada.</span>
+    <span class="row" style="display:flex;gap:16px;flex-wrap:wrap"><a href="../soap-note-template.html" hreflang="en">Plantilla de nota SOAP gratis (EN)</a><a href="../massage-intake-form.html" hreflang="en">Formulario de admisión gratis (EN)</a><a href="../massage-body-chart.html" hreflang="en">Mapa corporal para imprimir (EN)</a><a href="../massage-soap-note-examples.html" hreflang="en">Ejemplos de notas SOAP (EN)</a><a href="../massage-charting-abbreviations.html" hreflang="en">Abreviaturas clínicas (EN)</a><a href="../contact.html" hreflang="en">Contacto (EN)</a><a href="../privacy.html" hreflang="en">Privacidad (EN)</a><a href="../terms.html" hreflang="en">Términos (EN)</a><a href="../refund.html" hreflang="en">Reembolsos (EN)</a><a href="../app/">Abrir la app</a></span>
+  </div>
+</footer>
+
+<script src="../assets/bodychart.js"></script>
+<script>
+(function () {
+  // Cookie-free counts via hits.sh (no account). Each key's total is public at https://hits.sh/<key>/
+  // Spanish page: every key is prefixed with "es-" so these visits stay separate from the English page.
+  // Skipped on localhost so testing doesn't inflate the numbers. Landing page only, never in /app.
+  var COUNT = 'https://hits.sh/zircon1011a-prog.github.io/tablenote/';
+  var PREFIX = 'es-';
+  var live = !/^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname);
+  function hit(key) { if (live) { var i = new Image(); i.referrerPolicy = 'no-referrer'; i.src = COUNT + PREFIX + key + '.svg'; } }
+  function track(name) {
+    hit('e-' + name);
+    try { if (window.goatcounter && window.goatcounter.count) window.goatcounter.count({ path: 'event-' + PREFIX + name, title: PREFIX + name, event: true }); } catch (e) {}
+  }
+  hit('visit');
+  document.querySelectorAll('[data-track]').forEach(function (a) {
+    a.addEventListener('click', function () { track(a.getAttribute('data-track')); });
+  });
+
+  // Page-local Spanish labels for the shared body chart (assets/bodychart.js stays English)
+  var TYPE_LABEL = { pain: 'Dolor', tension: 'Tensión', avoid: 'Evitar' };
+  var REGION = {
+    'Head / face': 'Cabeza / cara', 'Occiput': 'Occipucio', 'Anterior neck': 'Cuello (anterior)', 'Cervical spine': 'Columna cervical',
+    'posterior neck': 'cuello posterior', 'deltoid': 'deltoides', 'biceps': 'bíceps', 'triceps': 'tríceps',
+    'forearm flexors': 'flexores del antebrazo', 'forearm extensors': 'extensores del antebrazo', 'hand': 'mano',
+    'pectoralis major': 'pectoral mayor', 'upper trapezius': 'trapecio superior', 'Sternum': 'Esternón', 'chest wall': 'pared torácica',
+    'Thoracic spine': 'Columna torácica', 'rhomboids': 'romboides', 'latissimus dorsi': 'dorsal ancho', 'Abdomen': 'Abdomen',
+    'obliques': 'oblicuos', 'Lumbar spine': 'Columna lumbar', 'erector spinae': 'erectores de la columna', 'quadratus lumborum': 'cuadrado lumbar',
+    'hip flexors': 'flexores de cadera', 'gluteals': 'glúteos', 'quadriceps': 'cuádriceps', 'hamstrings': 'isquiotibiales',
+    'knee': 'rodilla', 'popliteal fossa': 'fosa poplítea', 'tibialis anterior': 'tibial anterior',
+    'gastrocnemius / soleus': 'gastrocnemio / sóleo', 'foot (dorsum)': 'dorso del pie', 'heel / plantar fascia': 'talón / fascia plantar'
+  };
+  var SIDE = { L: 'izq.', R: 'der.' };
+  function regionText(r) {
+    var m = /^([LR]) (.+)$/.exec(r);
+    if (!m) return REGION[r] || r;
+    var base = REGION[m[2]] || m[2];
+    return base.charAt(0).toUpperCase() + base.slice(1) + ' (' + SIDE[m[1]] + ')';
+  }
+
+  // Hero demo: a live body chart preloaded with example marks
+  var sample = [
+    { id: 'a', view: 'back', x: 122, y: 98, type: 'pain' },
+    { id: 'b', view: 'back', x: 78, y: 98, type: 'pain' },
+    { id: 'c', view: 'back', x: 115, y: 124, type: 'tension' },
+    { id: 'd', view: 'front', x: 118, y: 320, type: 'avoid' }
+  ];
+  sample.forEach(function (m) { m.region = BodyChart.region(m.view, m.x, m.y); });
+  var list = document.getElementById('demo-marks');
+  function renderList(marks) {
+    list.innerHTML = marks.length ? '' : '<li style="color:var(--ink-2)">Todavía no hay marcas. Toca la figura.</li>';
+    marks.forEach(function (m) {
+      var li = document.createElement('li');
+      li.innerHTML = BodyChart.glyphSVG(m.type);
+      li.appendChild(document.createTextNode(regionText(m.region)));
+      list.appendChild(li);
+    });
+  }
+  var tracked = false;
+  var chart = BodyChart.create(document.getElementById('demo-chart'), {
+    marks: sample, type: 'pain', label: 'Mapa corporal, vistas anterior y posterior',
+    onChange: function (m) { renderList(m); if (!tracked) { track('demo-mark'); tracked = true; } }
+  });
+  renderList(sample);
+  // Translate the side letters drawn inside the SVG (ANTERIOR / POSTERIOR read the same in Spanish)
+  var SVG_TEXT = { L: 'I', R: 'D' };
+  chart.svg.querySelectorAll('text').forEach(function (t) { if (SVG_TEXT[t.textContent]) t.textContent = SVG_TEXT[t.textContent]; });
+
+  var legend = document.getElementById('demo-legend');
+  Object.keys(BodyChart.TYPES).forEach(function (t, i) {
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.setAttribute('aria-pressed', i === 0 ? 'true' : 'false');
+    b.innerHTML = BodyChart.glyphSVG(t) + (TYPE_LABEL[t] || BodyChart.TYPES[t].label.split(' /')[0]);
+    b.addEventListener('click', function () {
+      legend.querySelectorAll('button').forEach(function (x) { x.setAttribute('aria-pressed', 'false'); });
+      b.setAttribute('aria-pressed', 'true');
+      chart.setType(t);
+    });
+    legend.appendChild(b);
+  });
+
+  // "Reserve" = pre-payment intent. Record the plan, then move to the form.
+  // Set this to the Lemon Squeezy checkout link when sales open; the founding button then goes straight to checkout.
+  var CHECKOUT_URL = '';
+  var MONTHLY_CHECKOUT_URL = '';
+  var LIFETIME_CHECKOUT_URL = '';
+  function toCheckout(id, url, label, event) {
+    var old = document.getElementById(id);
+    var link = document.createElement('a');
+    link.className = old.className; link.href = url; link.textContent = label;
+    link.addEventListener('click', function () { track(event); });
+    old.replaceWith(link);
+  }
+  if (LIFETIME_CHECKOUT_URL) toCheckout('buy-lifetime', LIFETIME_CHECKOUT_URL, 'Comprar de por vida, $79 USD', 'checkout-lifetime-79');
+  if (MONTHLY_CHECKOUT_URL) toCheckout('buy-monthly', MONTHLY_CHECKOUT_URL, 'Empezar plan mensual', 'checkout-monthly-9');
+  if (CHECKOUT_URL) {
+    toCheckout('buy-founding', CHECKOUT_URL, 'Hazte miembro fundador', 'checkout-founding-59');
+    document.getElementById('after-plans').innerHTML = 'Pago seguro con Lemon Squeezy, que gestiona el cobro y los impuestos sobre las ventas. Garantía de devolución de 30 días. Consulta la <a href="../refund.html" hreflang="en">Política de reembolsos</a> (EN).';
+  }
+  var names = { 'founding-59': 'Miembro fundador, $59 USD/año', 'solo-monthly-9': 'Mensual, $9 USD/mes', 'lifetime-79': 'De por vida, $79 USD pago único' };
+  document.querySelectorAll('[data-plan]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var plan = b.getAttribute('data-plan');
+      document.getElementById('lead-plan').value = plan;
+      var chosen = document.getElementById('lead-chosen');
+      chosen.textContent = 'Reservando: ' + names[plan];
+      chosen.hidden = false;
+      document.getElementById('lead-submit').textContent = 'Reservar mi precio';
+      track('plan-' + plan);
+      document.getElementById('signup').scrollIntoView({ behavior: 'smooth' });
+      setTimeout(function () { document.getElementById('lead-email').focus({ preventScroll: true }); }, 400);
+    });
+  });
+
+  var form = document.getElementById('lead');
+  var thanks = document.getElementById('lead-thanks');
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    var action = form.getAttribute('action');
+    var done = function () {
+      thanks.textContent = 'Ya estás en la lista. Te escribiremos cuando abran los planes de pago.';
+      thanks.hidden = false;
+      document.getElementById('lead-submit').disabled = true;
+      track('lead-submit');
+    };
+    if (!action || !live) { done(); return; }
+    var submit = document.getElementById('lead-submit');
+    submit.disabled = true;
+    fetch(action, { method: 'POST', body: new FormData(form), headers: { Accept: 'application/json' } })
+      .then(function (r) { return r.json(); })
+      .then(function (j) { if (String(j.success) === 'true') done(); else throw new Error(j.message || 'rejected'); })
+      .catch(function () {
+        submit.disabled = false;
+        thanks.textContent = 'No se pudo enviar. Revisa tu conexión e inténtalo de nuevo.';
+        thanks.hidden = false;
+      });
+  });
+
+  // The shared theme switch (assets/theme.js) writes English labels; translate them on this page.
+  var THEME = { Auto: 'Auto', Light: 'Claro', Dark: 'Oscuro' };
+  var THEME_ARIA = { Auto: 'Apariencia: según el sistema', Light: 'Apariencia: claro', Dark: 'Apariencia: oscuro' };
+  function localizeTheme() {
+    document.querySelectorAll('.theme-btn').forEach(function (b) {
+      var s = b.querySelector('span');
+      if (!s || !THEME_ARIA[s.getAttribute('data-en') || s.textContent]) return;
+      var en = s.getAttribute('data-en') || s.textContent;
+      if (s.textContent !== THEME[en]) { s.setAttribute('data-en', en); s.textContent = THEME[en]; }
+      var aria = THEME_ARIA[en] + '. Toca para cambiar.';
+      if (b.getAttribute('aria-label') !== aria) b.setAttribute('aria-label', aria);
+    });
+  }
+  document.querySelectorAll('.theme-btn').forEach(function (b) {
+    new MutationObserver(localizeTheme).observe(b, { childList: true, attributes: true, attributeFilter: ['aria-label'] });
+  });
+  document.addEventListener('DOMContentLoaded', localizeTheme);
+})();
+</script>
+<script src="../assets/theme.js"></script>
+</body>
+</html>

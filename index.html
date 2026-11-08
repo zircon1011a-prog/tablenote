@@ -5,6 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Tablenote — SOAP notes for solo massage therapists</title>
 <link rel="canonical" href="https://zircon1011a-prog.github.io/tablenote/">
+<link rel="alternate" hreflang="en" href="https://zircon1011a-prog.github.io/tablenote/">
+<link rel="alternate" hreflang="fr-CA" href="https://zircon1011a-prog.github.io/tablenote/fr/">
+<link rel="alternate" hreflang="es" href="https://zircon1011a-prog.github.io/tablenote/es/">
+<link rel="alternate" hreflang="x-default" href="https://zircon1011a-prog.github.io/tablenote/">
 <meta name="description" content="SOAP notes for massage therapists, on your phone. Tap a front-and-back body chart, and export every record as PDF or CSV anytime. Free for up to 3 clients.">
 <meta property="og:title" content="Tablenote — SOAP notes for solo massage therapists">
 <meta property="og:image" content="https://zircon1011a-prog.github.io/tablenote/assets/pitch/tablenote-hero.png">
@@ -133,6 +137,14 @@
 
   footer { border-top: 1px solid var(--line); }
   footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; justify-content: space-between; align-items: center; padding-block: 28px 40px; color: var(--ink-2); font-size: 14px; }
+
+  /* Language switch (EN · FR · ES) */
+  .lang { display: flex; align-items: center; font: 500 13px/1 var(--f-mono); color: var(--ink-2); white-space: nowrap; }
+  .top nav .lang a:not(.btn) { display: inline-block; padding: 10px 3px; font: inherit; color: var(--ink-2); text-decoration: none; }
+  .top nav .lang a:not(.btn):hover { color: var(--ink); }
+  .top nav .lang a[aria-current] { color: var(--ink); font-weight: 700; text-decoration: underline; text-underline-offset: 4px; }
+  @media (max-width: 720px) { .top nav { gap: 10px; } }
+  @media (max-width: 400px) { .top .wrap { gap: 6px; } .top nav { gap: 4px; } .lang { font-size: 12px; } .lang .sep { display: none; } .top nav .lang a:not(.btn) { padding-inline: 2px; } .top nav .btn.small { padding: 0 9px; white-space: nowrap; } }
 </style>
 </head>
 <body>
@@ -147,6 +159,7 @@
       <a href="#how">How it works</a>
       <a href="#pricing">Pricing</a>
       <a href="#faq">FAQ</a>
+      <span class="lang" role="group" aria-label="Language"><a href="./" lang="en" hreflang="en" aria-current="page">EN</a><span class="sep" aria-hidden="true">·</span><a href="fr/" lang="fr-CA" hreflang="fr-CA" title="Français">FR</a><span class="sep" aria-hidden="true">·</span><a href="es/" lang="es" hreflang="es" title="Español">ES</a></span>
       <button class="btn small quiet theme-btn" type="button" aria-label="Appearance: match system"></button>
       <a class="btn small" href="app/" data-track="nav-open-app">Open the app</a>
     </nav>

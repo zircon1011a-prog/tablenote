@@ -2,7 +2,13 @@
    The choice is kept on this device only. */
 (function () {
   var KEY = 'tablenote.theme', ORDER = ['system', 'light', 'dark'];
-  var LABEL = { system: 'Auto', light: 'Light', dark: 'Dark' };
+  // Labels follow the page language (<html lang>), so the same file serves English, French and Spanish pages.
+  var WORDS = {
+    en: { system: 'Auto', light: 'Light', dark: 'Dark', match: 'match system', aria: 'Appearance: {x}. Tap to change.' },
+    fr: { system: 'Auto', light: 'Clair', dark: 'Sombre', match: 'selon le système', aria: 'Apparence : {x}. Touchez pour changer.' },
+    es: { system: 'Auto', light: 'Claro', dark: 'Oscuro', match: 'según el sistema', aria: 'Apariencia: {x}. Toca para cambiar.' }
+  };
+  function words() { var l = (document.documentElement.lang || 'en').slice(0, 2).toLowerCase(); return WORDS[l] || WORDS.en; }
   var ICON = {
     system: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 4a8 8 0 0 1 0 16z" fill="currentColor"/></svg>',
     light: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
@@ -14,9 +20,10 @@
     if (t === 'system') root.removeAttribute('data-theme'); else root.setAttribute('data-theme', t);
     var dark = t === 'dark' || (t === 'system' && window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches);
     document.querySelectorAll('meta[name="theme-color"]').forEach(function (m) { m.setAttribute('content', dark ? '#12141b' : '#f2f3ef'); });
+    var w = words();
     document.querySelectorAll('.theme-btn').forEach(function (b) {
-      b.innerHTML = ICON[t] + '<span>' + LABEL[t] + '</span>';
-      b.setAttribute('aria-label', 'Appearance: ' + (t === 'system' ? 'match system' : t) + '. Tap to change.');
+      b.innerHTML = ICON[t] + '<span>' + w[t] + '</span>';
+      b.setAttribute('aria-label', w.aria.replace('{x}', t === 'system' ? w.match : w[t].toLowerCase()));
     });
   }
   function set(t) { try { if (t === 'system') localStorage.removeItem(KEY); else localStorage.setItem(KEY, t); } catch (e) {} apply(t); }
@@ -27,5 +34,6 @@
   });
   if (window.matchMedia) matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function () { apply(get()); });
   window.addEventListener('storage', function (e) { if (e.key === KEY) apply(get()); });
+  window.TablenoteTheme = { refresh: function () { apply(get()); } };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { apply(get()); }); else apply(get());
 })();

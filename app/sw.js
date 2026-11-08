@@ -1,6 +1,6 @@
 /* Tablenote offline support: the app opens without a connection.
    Notes are never cached here; they live in the page's own storage. */
-var CACHE = 'tablenote-app-v3';
+var CACHE = 'tablenote-app-v4';
 var CORE = ['./', 'index.html', 'app.css', 'app.js', 'manifest.webmanifest', '../assets/brand.css', '../assets/bodychart.js', '../assets/theme.js', '../assets/icon.svg'];
 
 self.addEventListener('install', function (e) {
