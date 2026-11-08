@@ -7,7 +7,7 @@
 
   // Sales switch. While checkoutUrl is empty the free limit is not enforced (beta stays fully open).
   // storeId: set to the Lemon Squeezy store id so only our keys unlock the app.
-  var SALES = { checkoutUrl: '', storeId: null, freeClients: 3, priceLabel: '$59/year' };
+  var SALES = { checkoutUrl: '', lifetimeUrl: '', storeId: null, freeClients: 3, priceLabel: '$59/year', lifetimeLabel: '$79 once' };
   var LICENSE_API = 'https://api.lemonsqueezy.com/v1/licenses/';
   var view = document.getElementById('view');
   var saveState = document.getElementById('save-state');
@@ -53,6 +53,7 @@
     try { localStorage.setItem(KEY, JSON.stringify(db)); storageOK = true; }
     catch (e) { storageOK = false; }
     if (typeof askPersist === 'function' && db.clients.some(function (c) { return !c.example; })) askPersist();
+    if (typeof autoSoon === 'function') autoSoon();
     showSave();
   }
   function saveSoon() { dirty = true; clearTimeout(saveTimer); saveTimer = setTimeout(save, 350); }
@@ -124,8 +125,9 @@
     return licenseCall('deactivate', { license_key: l.key, instance_id: l.instanceId || '' }).then(done, done);
   }
   function upgradePanel(reason) {
-    var buy = SALES.checkoutUrl ? '<a class="btn" href="' + esc(SALES.checkoutUrl) + '" target="_blank" rel="noopener">Become a founding member, ' + esc(SALES.priceLabel) + '</a>' : '';
-    return '<section class="panel" id="plan-panel"><h2>' + (isPro() ? 'Founding member' : 'Your plan') + '</h2>' +
+    var buy = (SALES.checkoutUrl ? '<a class="btn" href="' + esc(SALES.checkoutUrl) + '" target="_blank" rel="noopener">Become a founding member, ' + esc(SALES.priceLabel) + '</a>' : '') +
+      (SALES.lifetimeUrl ? '<a class="btn quiet" href="' + esc(SALES.lifetimeUrl) + '" target="_blank" rel="noopener">Pay once, ' + esc(SALES.lifetimeLabel) + '</a>' : '');
+    return '<section class="panel" id="plan-panel"><h2>' + (isPro() ? (license().expiresAt ? 'Founding member' : 'Lifetime member') : 'Your plan') + '</h2>' +
       (isPro()
         ? '<p>Unlimited clients on this device' + (license().expiresAt ? ' until ' + fmtDate(isoDay(new Date(license().expiresAt))) : '') + '. Thank you for supporting Tablenote.</p>' +
           '<div class="row"><button class="btn small quiet" data-action="deactivate-license">Remove license from this device</button></div>'
@@ -203,8 +205,9 @@
     var last = db.settings.lastBackupAt;
     var limit = (IOS && !STANDALONE ? 3 : 7) * 864e5;
     var stale = !last || (Date.now() - last) > limit;
+    if (auto.state === 'prompt') return '<div class="notice warn"><p><b>Automatic backup is paused.</b> Your browser asks again after a restart.</p><button class="btn small" data-action="auto-resume">Resume automatic backup</button></div>';
     if (!stale) return '';
-    return '<div class="notice warn"><p><b>' + (last ? 'Last backup ' + fmtDate(isoDay(new Date(last))) + '.' : 'No backup yet.') + '</b> Notes are stored only on this device. Save a backup file to your cloud drive' + (IOS && !STANDALONE ? ' every few days.' : ' once a week.') + '</p><button class="btn small" data-action="backup">Download backup</button></div>';
+    return '<div class="notice warn"><p><b>' + (last ? 'Last backup ' + fmtDate(isoDay(new Date(last))) + '.' : 'No backup yet.') + '</b> Notes are stored only on this device. Save a backup file to your cloud drive' + (IOS && !STANDALONE ? ' every few days.' : ' once a week.') + '</p><button class="btn small" data-action="backup">' + (CAN_SHARE ? 'Save backup to iCloud or Drive' : 'Download backup') + '</button></div>';
   }
 
   function renderList() {
@@ -434,8 +437,14 @@
     if (SALES.checkoutUrl || license()) h += upgradePanel();
     h += '<section class="panel"><h2>Where your notes are</h2><p>Saved in this browser on this device. Nothing is sent to a server. Clearing browser data or switching phones removes them, so keep a backup file.</p>' +
       '<div class="stat">' + plural(db.clients.length, 'client') + ' · ' + plural(db.notes.length, 'note') + (real !== db.notes.length ? ' (' + (db.notes.length - real) + ' example)' : '') + ' · last backup: ' + (st.lastBackupAt ? fmtDate(isoDay(new Date(st.lastBackupAt))) : 'never') + '</div></section>';
+    if (FOLDER_OK) h += '<section class="panel"><h2>Automatic backup</h2>' + (auto.state === 'on'
+        ? '<p>On. A backup file is saved to <b>' + esc(auto.name) + '</b> every time you change a note (one file per day). Pick a Google Drive, Dropbox, OneDrive or iCloud Drive folder and the copy leaves this computer too.</p><div class="row"><button class="btn small quiet" data-action="auto-pick">Change folder</button><button class="btn small quiet" data-action="auto-off">Turn off</button></div>'
+        : auto.state === 'prompt'
+        ? '<p>Paused for <b>' + esc(auto.name) + '</b>. Your browser asks again after a restart.</p><div class="row"><button class="btn small" data-action="auto-resume">Resume automatic backup</button><button class="btn small quiet" data-action="auto-off">Turn off</button></div>'
+        : '<p>Choose a folder once and Tablenote saves a backup file there every time you change a note, keeping the newest 30 days. Pick a Google Drive, Dropbox, OneDrive or iCloud Drive folder so the copy also leaves this computer.</p><div class="row"><button class="btn small" data-action="auto-pick">Choose backup folder</button></div>') +
+      '<p class="hint" id="auto-msg" role="status"></p></section>';
     h += '<section class="panel"><h2>Download</h2>' +
-      '<div class="row"><button class="btn" data-action="backup">Full backup (.json)</button><button class="btn quiet" data-action="csv">All notes as spreadsheet (.csv)</button></div>' +
+      '<div class="row"><button class="btn" data-action="backup">' + (CAN_SHARE ? 'Save backup to iCloud or Drive' : 'Full backup (.json)') + '</button><button class="btn quiet" data-action="csv">All notes as spreadsheet (.csv)</button></div>' +
       '<p>The backup file restores everything on another device. The spreadsheet opens in Excel, Numbers or Google Sheets. For a PDF of one visit, open the note and choose “Print or save PDF”.</p></section>';
     h += '<section class="panel"><h2>Your details on printed notes</h2><div class="form" style="padding:0;border:0">' +
       '<label class="field"><span>Your name</span><input type="text" id="st-therapist" data-setting="therapist" value="' + esc(st.therapist) + '" placeholder="e.g. Sam Rivera"></label>' +
@@ -457,11 +466,87 @@
     document.body.appendChild(a); a.click();
     setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
   }
+  function backupText() {
+    var settings = Object.assign({}, db.settings); delete settings.license;
+    return JSON.stringify({ app: 'tablenote', version: 1, exportedAt: new Date().toISOString(), clients: db.clients, notes: db.notes, settings: settings }, null, 2);
+  }
+  function markBackedUp() { db.settings.lastBackupAt = Date.now(); save(); if (parse()[0] === 'data') renderData(); else if (!parse()[0]) renderList(); }
   function backup() {
-    db.settings.lastBackupAt = Date.now();
-    var payload = { app: 'tablenote', version: 1, exportedAt: new Date().toISOString(), clients: db.clients, notes: db.notes, settings: db.settings };
-    download('tablenote-backup-' + today() + '.json', 'application/json', JSON.stringify(payload, null, 2));
-    save();
+    var name = 'tablenote-backup-' + today() + '.json', text = backupText();
+    if (CAN_SHARE) {
+      var file = new File([text], name, { type: 'application/json' });
+      if (navigator.canShare({ files: [file] })) {
+        navigator.share({ files: [file], title: 'Tablenote backup' }).then(markBackedUp).catch(function (e) {
+          if (e && e.name !== 'AbortError') { download(name, 'application/json', text); markBackedUp(); }
+        });
+        return;
+      }
+    }
+    download(name, 'application/json', text); markBackedUp();
+  }
+
+  /* ---------- automatic backup to a folder (Chrome and Edge on computers) ---------- */
+  var FOLDER_OK = typeof window.showDirectoryPicker === 'function';
+  var CAN_SHARE = (IOS || /Android/.test(navigator.userAgent)) && !!(navigator.canShare && navigator.share && window.File);
+  var auto = { state: 'off', handle: null, name: '', timer: null };
+  function idb(mode, fn) {
+    return new Promise(function (res, rej) {
+      var r = indexedDB.open('tablenote-backup', 1);
+      r.onupgradeneeded = function () { r.result.createObjectStore('kv'); };
+      r.onerror = function () { rej(r.error); };
+      r.onsuccess = function () { var tx = r.result.transaction('kv', mode), q = fn(tx.objectStore('kv')); tx.oncomplete = function () { res(q && q.result); }; tx.onerror = function () { rej(tx.error); }; };
+    });
+  }
+  function autoInit() {
+    if (!FOLDER_OK || !window.indexedDB) return;
+    idb('readonly', function (s) { return s.get('folder'); }).then(function (h) {
+      if (!h) return;
+      auto.handle = h; auto.name = h.name;
+      return h.queryPermission({ mode: 'readwrite' }).then(function (p) { auto.state = p === 'granted' ? 'on' : 'prompt'; route(); });
+    }).catch(function () {});
+  }
+  function autoWrite() {
+    if (auto.state !== 'on' || !realNotes().length) return Promise.resolve();
+    return auto.handle.getFileHandle('tablenote-backup-' + today() + '.json', { create: true })
+      .then(function (fh) { return fh.createWritable(); })
+      .then(function (w) { return w.write(backupText()).then(function () { return w.close(); }); })
+      .then(function () { db.settings.lastBackupAt = Date.now(); localStorage.setItem(KEY, JSON.stringify(db)); return autoPrune(); })
+      .catch(function () { auto.state = 'prompt'; });
+  }
+  // Each file is a full copy, so only the newest 30 daily files are kept.
+  function autoPrune() {
+    if (!auto.handle.values) return;
+    var names = [], it = auto.handle.values();
+    function next() {
+      return it.next().then(function (r) {
+        if (r.done) return;
+        if (r.value.kind === 'file' && /^tablenote-backup-\d{4}-\d{2}-\d{2}\.json$/.test(r.value.name)) names.push(r.value.name);
+        return next();
+      });
+    }
+    return next().then(function () {
+      names.sort().reverse().slice(30).forEach(function (n) { auto.handle.removeEntry(n).catch(function () {}); });
+    }).catch(function () {});
+  }
+  function autoSoon() { if (auto.state !== 'on') return; clearTimeout(auto.timer); auto.timer = setTimeout(autoWrite, 4000); }
+  function autoPick() {
+    var msg = function (t) { var m = document.getElementById('auto-msg'); if (m) m.textContent = t; };
+    window.showDirectoryPicker({ id: 'tablenote-backup', mode: 'readwrite' }).then(function (h) {
+      return idb('readwrite', function (s) { return s.put(h, 'folder'); }).then(function () {
+        auto.handle = h; auto.name = h.name; auto.state = 'on';
+        return autoWrite();
+      });
+    }).then(function () { renderData(); msg('Saved a backup to ' + auto.name + '.'); })
+      .catch(function (e) { if (e && e.name !== 'AbortError') msg("Couldn't use that folder. Try another one."); });
+  }
+  function autoResume() {
+    auto.handle.requestPermission({ mode: 'readwrite' }).then(function (p) {
+      auto.state = p === 'granted' ? 'on' : 'prompt'; return autoWrite();
+    }).then(route).catch(function () {});
+  }
+  function autoOff() {
+    idb('readwrite', function (s) { return s.delete('folder'); }).catch(function () {});
+    auto = { state: 'off', handle: null, name: '', timer: null }; renderData();
   }
   function csvCell(v) { v = v == null ? '' : String(v); return /[",\n\r]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; }
   function exportCSV() {
@@ -520,12 +605,12 @@
     } else if (act === 'edit-client') {
       ui.editingClient = true; renderClient(parse()[1]);
     } else if (act === 'delete-client') {
-      if (!confirmTwice(a, 'dc', 'Tap again to delete client and visits')) return;
+      if (!confirmTwice(a, 'dc', notesFor(id).some(amendable) ? 'Records often must be kept for years. Tap again to delete client and visits' : 'Tap again to delete client and visits')) return;
       db.clients = db.clients.filter(function (c) { return c.id !== id; });
       db.notes = db.notes.filter(function (n) { return n.clientId !== id; });
       save(); location.hash = '#/';
     } else if (act === 'delete-note') {
-      if (!confirmTwice(a, 'dn', 'Tap again to delete')) return;
+      if (!confirmTwice(a, 'dn', amendable(note(id)) ? 'Records often must be kept for years. Tap again to delete' : 'Tap again to delete')) return;
       var dn = note(id); db.notes = db.notes.filter(function (n) { return n.id !== id; });
       openNoteId = null; save(); location.hash = '#/client/' + dn.clientId;
     } else if (act === 'remove-mark') {
@@ -540,6 +625,12 @@
       window.print();
     } else if (act === 'backup') {
       backup(); if (parse()[0] === 'data') renderData(); else renderList();
+    } else if (act === 'auto-pick') {
+      autoPick();
+    } else if (act === 'auto-resume') {
+      autoResume();
+    } else if (act === 'auto-off') {
+      autoOff();
     } else if (act === 'csv') {
       exportCSV();
     } else if (act === 'activate-license') {
@@ -639,5 +730,6 @@
 
   if (!storageOK) showSave();
   route();
+  autoInit();
   revalidateLicense();
 })();

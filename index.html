@@ -100,8 +100,9 @@
   .data dt { padding-top: 4px; }
   .data dd { margin: 0; }
 
-  .plans { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
-  @media (max-width: 860px) { .plans { grid-template-columns: minmax(0, 1fr); } }
+  .plans { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+  @media (max-width: 1080px) { .plans { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (max-width: 620px) { .plans { grid-template-columns: minmax(0, 1fr); } }
   .plan { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 22px; display: grid; grid-template-rows: auto auto 1fr auto; gap: 12px; }
   .plan.main { border: 2px solid var(--accent); }
   .plan .price { font: 800 44px/1 var(--f-display); letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
@@ -258,7 +259,7 @@
       <div class="sec-head">
         <span class="label">Pricing</span>
         <h2>Free to start. One fair price when you grow.</h2>
-        <p>Chart up to 3 clients for free. Founding members get unlimited clients at a price that never goes up while they stay.</p>
+        <p>Chart up to 3 clients for free. Then subscribe, or pay once and own it. No price increases on what you bought.</p>
       </div>
       <div class="plans">
         <div class="plan">
@@ -278,6 +279,12 @@
           <div class="price">$9<small> / month</small></div>
           <ul><li>Unlimited clients and notes</li><li>Cancel any time</li></ul>
           <button class="btn ghost" type="button" data-plan="solo-monthly-9" id="buy-monthly">Reserve $9/month</button>
+        </div>
+        <div class="plan">
+          <span class="label">Lifetime</span>
+          <div class="price">$79<small> once</small></div>
+          <ul><li>Unlimited clients and notes</li><li>Pay once, no subscription</li><li>Use it on up to 3 of your devices</li><li>30-day money-back guarantee</li></ul>
+          <button class="btn ghost" type="button" data-plan="lifetime-79" id="buy-lifetime">Reserve lifetime, $79</button>
         </div>
       </div>
       <p class="after-plans" id="after-plans">Paid plans open soon. Reserving takes an email address; nothing is charged. See the <a href="refund.html">Refund Policy</a>.</p>
@@ -432,6 +439,7 @@
   // Set this to the Lemon Squeezy checkout link when sales open; the founding button then goes straight to checkout.
   var CHECKOUT_URL = '';
   var MONTHLY_CHECKOUT_URL = '';
+  var LIFETIME_CHECKOUT_URL = '';
   function toCheckout(id, url, label, event) {
     var old = document.getElementById(id);
     var link = document.createElement('a');
@@ -439,12 +447,13 @@
     link.addEventListener('click', function () { track(event); });
     old.replaceWith(link);
   }
+  if (LIFETIME_CHECKOUT_URL) toCheckout('buy-lifetime', LIFETIME_CHECKOUT_URL, 'Buy lifetime, $79', 'checkout-lifetime-79');
   if (MONTHLY_CHECKOUT_URL) toCheckout('buy-monthly', MONTHLY_CHECKOUT_URL, 'Start monthly', 'checkout-monthly-9');
   if (CHECKOUT_URL) {
     toCheckout('buy-founding', CHECKOUT_URL, 'Become a founding member', 'checkout-founding-59');
     document.getElementById('after-plans').innerHTML = 'Secure checkout by Lemon Squeezy, which handles payment and sales tax. 30-day money-back guarantee. See the <a href="refund.html">Refund Policy</a>.';
   }
-  var names = { 'founding-59': 'Founding member, $59/year', 'solo-monthly-9': 'Monthly, $9/month' };
+  var names = { 'founding-59': 'Founding member, $59/year', 'solo-monthly-9': 'Monthly, $9/month', 'lifetime-79': 'Lifetime, $79 once' };
   document.querySelectorAll('[data-plan]').forEach(function (b) {
     b.addEventListener('click', function () {
       var plan = b.getAttribute('data-plan');
