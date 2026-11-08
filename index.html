@@ -244,11 +244,11 @@
       <div class="sec-head flush">
         <span class="label">Where your notes live</span>
         <h2>Your notes stay with you.</h2>
-        <p>During the beta, Tablenote saves notes in your browser on your own device. We never receive them, so we can't lose or leak them.</p>
+        <p>Tablenote saves notes in your browser on your own device. We never receive them, so we can't lose or leak them.</p>
       </div>
       <dl class="data">
-        <div><dt class="label">Beta</dt><dd>Stored on this device only. Download a backup each week, since clearing your browser data removes notes.</dd></div>
-        <div><dt class="label">Next</dt><dd>Sync between phone and laptop, on HIPAA-eligible infrastructure, with a Business Associate Agreement available.</dd></div>
+        <div><dt class="label">Stored</dt><dd>On this device only. Clearing your browser data removes notes, so keep a backup.</dd></div>
+        <div><dt class="label">Backup</dt><dd>On a computer, pick a Google Drive, Dropbox or iCloud folder once and every change is saved there. On a phone, one tap saves a backup to iCloud or Drive.</dd></div>
         <div><dt class="label">Always</dt><dd>Full export of every record on every plan, including after you cancel.</dd></div>
       </dl>
     </div>
@@ -295,8 +295,8 @@
     <div class="wrap split">
       <div class="sec-head flush">
         <span class="label">Early access</span>
-        <h2>Get sync first, at beta pricing.</h2>
-        <p>We'll email you once when sync is ready. No newsletter.</p>
+        <h2>Lock in a price before paid plans open.</h2>
+        <p>We'll email you once when paid plans open, before anything is charged. No newsletter.</p>
       </div>
       <!-- Submissions are relayed by FormSubmit to the owner's inbox. The action uses FormSubmit's alias, not the address. -->
       <form class="lead" id="lead" action="https://formsubmit.co/ajax/a31453b1dc8c84718be297694be344b1" method="POST">
@@ -327,7 +327,7 @@
         </fieldset>
         <input type="hidden" name="plan" id="lead-plan" value="">
         <button class="btn" type="submit" id="lead-submit">Join early access</button>
-        <p class="thanks" id="lead-thanks" hidden>You're on the list. We'll email you when sync is ready.</p>
+        <p class="thanks" id="lead-thanks" hidden>You're on the list. We'll email you when paid plans open.</p>
         <p class="hint" style="margin:0;font-size:13px;color:var(--ink-2)">We only email you about Tablenote. See our <a href="privacy.html">Privacy Policy</a>.</p>
       </form>
     </div>
@@ -338,7 +338,7 @@
       <div class="sec-head"><span class="label">Questions</span><h2>Before you try it</h2></div>
       <details>
         <summary>Is Tablenote HIPAA compliant?</summary>
-        <p>During the beta your notes never leave your device, so we never receive or store client health information. The sync version will run on HIPAA-eligible infrastructure, and we'll sign a Business Associate Agreement with you before you use it for client records.</p>
+        <p>Your notes never leave your device, so we never receive or store client health information. Backups go only to places you choose, such as your own cloud drive. If we ever offer syncing, it will run on HIPAA-eligible infrastructure, and we'll sign a Business Associate Agreement with you before you use it for client records.</p>
       </details>
       <details>
         <summary>Does it work on my phone?</summary>
@@ -474,7 +474,7 @@
     e.preventDefault();
     var action = form.getAttribute('action');
     var done = function () {
-      thanks.textContent = "You're on the list. We'll email you when sync is ready.";
+      thanks.textContent = "You're on the list. We'll email you when paid plans open.";
       thanks.hidden = false;
       document.getElementById('lead-submit').disabled = true;
       track('lead-submit');
