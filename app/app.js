@@ -161,7 +161,7 @@
 
   /* ---------- routing ---------- */
   var openNoteId = null;
-  var ui = { editingClient: false, search: '', pendingRestore: null };
+  var ui = { editingClient: false, search: '', pendingRestore: null, pendingImport: null };
 
   function parse() { return location.hash.replace(/^#\/?/, '').split('/').filter(Boolean); }
 
@@ -182,7 +182,7 @@
     else renderList();
     window.scrollTo(0, 0);
   }
-  window.addEventListener('hashchange', function () { ui.editingClient = false; ui.pendingRestore = null; route(); });
+  window.addEventListener('hashchange', function () { ui.editingClient = false; ui.pendingRestore = null; ui.pendingImport = null; route(); });
 
   /* ---------- views ---------- */
   // iPhone/iPad Safari deletes a website's stored data after 7 days without a visit.
@@ -450,6 +450,10 @@
       '<label class="field"><span>Your name</span><input type="text" id="st-therapist" data-setting="therapist" value="' + esc(st.therapist) + '" placeholder="e.g. Sam Rivera"></label>' +
       '<div class="grid2"><label class="field"><span>License or credential</span><input type="text" id="st-credential" data-setting="credential" value="' + esc(st.credential) + '" placeholder="e.g. LMT #MA12345"></label>' +
       '<label class="field"><span>Practice name</span><input type="text" id="st-business" data-setting="business" value="' + esc(st.business) + '" placeholder="e.g. Rivera Bodywork"></label></div></div></section>';
+    h += '<section class="panel"><h2>Import clients</h2><p>Bring in your client list from Square, your booking app or any spreadsheet saved as CSV. Names, phone numbers and emails come across; clients already here are skipped.</p>' +
+      '<div class="row"><span class="btn quiet file-btn">Choose CSV file<input type="file" id="import-file" accept=".csv,text/csv"></span></div>' +
+      (ui.pendingImport ? '<div class="notice"><p>Add <b>' + plural(ui.pendingImport.add.length, 'client') + '</b>' + (ui.pendingImport.skipped ? ' (' + ui.pendingImport.skipped + ' already here or without a name are skipped)' : '') + (ui.pendingImport.capped ? '. The free plan holds ' + SALES.freeClients + ' clients, so ' + ui.pendingImport.capped + ' more need a paid plan' : '') + ': ' + esc(ui.pendingImport.add.slice(0, 5).map(function (c) { return c.name; }).join(', ')) + (ui.pendingImport.add.length > 5 ? ' and more' : '') + '.</p><div class="row"><button class="btn small" data-action="import-confirm">Add clients</button><button class="btn small quiet" data-action="import-cancel">Cancel</button></div></div>' : '') +
+      '<p class="hint" id="import-msg" role="status"></p></section>';
     h += '<section class="panel"><h2>Restore from a backup</h2><p>Replaces the notes on this device with the ones in a Tablenote backup file.</p>' +
       '<div class="row"><span class="btn quiet file-btn">Choose backup file<input type="file" id="restore-file" accept=".json,application/json"></span></div>' +
       (ui.pendingRestore ? '<div class="notice warn"><p>Replace ' + plural(db.clients.length, 'client') + ' and ' + plural(db.notes.length, 'note') + ' on this device with ' + plural(ui.pendingRestore.clients.length, 'client') + ' and ' + plural(ui.pendingRestore.notes.length, 'note') + ' from the file?</p><div class="row"><button class="btn small" data-action="restore-confirm">Replace data</button><button class="btn small quiet" data-action="restore-cancel">Keep current data</button></div></div>' : '') +
@@ -466,6 +470,50 @@
     document.body.appendChild(a); a.click();
     setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
   }
+  /* ---------- import clients from CSV ---------- */
+  function parseCSV(text) {
+    text = text.replace(/^\uFEFF/, '');
+    var rows = [], row = [], cell = '', q = false;
+    for (var i = 0; i < text.length; i++) {
+      var ch = text[i];
+      if (q) {
+        if (ch === '"') { if (text[i + 1] === '"') { cell += '"'; i++; } else q = false; }
+        else cell += ch;
+      } else if (ch === '"') q = true;
+      else if (ch === ',' || ch === ';' || ch === '\t') { row.push(cell); cell = ''; }
+      else if (ch === '\n' || ch === '\r') { if (ch === '\r' && text[i + 1] === '\n') i++; row.push(cell); rows.push(row); row = []; cell = ''; }
+      else cell += ch;
+    }
+    if (cell || row.length) { row.push(cell); rows.push(row); }
+    return rows.filter(function (r) { return r.some(function (c) { return c.trim(); }); });
+  }
+  function clientsFromCSV(text) {
+    var rows = parseCSV(text);
+    if (rows.length < 2) throw new Error('empty');
+    var head = rows[0].map(function (h) { return h.trim().toLowerCase(); });
+    var col = function (re, not) { for (var i = 0; i < head.length; i++) if (re.test(head[i]) && !(not && not.test(head[i]))) return i; return -1; };
+    var first = col(/first|given/), last = col(/last|surname|family/), full = col(/^(full ?name|name|client( name)?|customer( name)?|display name)$/);
+    var email = col(/e-?mail/), phone = col(/phone|mobile|cell/), memo = col(/note|memo/);
+    if (first < 0 && full < 0) throw new Error('no name column');
+    var have = {};
+    db.clients.forEach(function (c) { have[c.name.trim().toLowerCase() + '|' + (c.email || '').toLowerCase()] = 1; });
+    var add = [], skipped = 0;
+    rows.slice(1).forEach(function (r) {
+      var g = function (i) { return i < 0 ? '' : String(r[i] || '').trim(); };
+      var name = full > -1 && g(full) ? g(full) : [g(first), g(last)].filter(Boolean).join(' ');
+      var key = name.toLowerCase() + '|' + g(email).toLowerCase();
+      if (!name || have[key]) { skipped++; return; }
+      have[key] = 1;
+      add.push({ id: uid(), name: name, phone: g(phone), email: g(email), history: g(memo), contra: '', createdAt: Date.now(), imported: true });
+    });
+    var capped = 0;
+    if (SALES.checkoutUrl && !isPro()) {
+      var room = Math.max(0, SALES.freeClients - realClients());
+      capped = Math.max(0, add.length - room); add = add.slice(0, room);
+    }
+    return { add: add, skipped: skipped, capped: capped };
+  }
+
   function backupText() {
     var settings = Object.assign({}, db.settings); delete settings.license;
     return JSON.stringify({ app: 'tablenote', version: 1, exportedAt: new Date().toISOString(), clients: db.clients, notes: db.notes, settings: settings }, null, 2);
@@ -659,6 +707,12 @@
       if (lic) db.settings.license = lic;
       ui.pendingRestore = null; save(); renderData();
       document.getElementById('restore-msg').textContent = 'Restored ' + plural(db.clients.length, 'client') + ' and ' + plural(db.notes.length, 'note') + '.';
+    } else if (act === 'import-confirm') {
+      var imp = ui.pendingImport; ui.pendingImport = null;
+      db.clients = db.clients.concat(imp.add); save(); renderData();
+      document.getElementById('import-msg').textContent = 'Added ' + plural(imp.add.length, 'client') + '.';
+    } else if (act === 'import-cancel') {
+      ui.pendingImport = null; renderData();
     } else if (act === 'restore-cancel') {
       ui.pendingRestore = null; renderData();
     } else if (act === 'wipe') {
@@ -686,6 +740,20 @@
 
   view.addEventListener('change', function (e) {
     var t = e.target;
+    if (t.id === 'import-file' && t.files[0]) {
+      var rd = new FileReader();
+      rd.onload = function () {
+        try {
+          var res = clientsFromCSV(rd.result);
+          if (!res.add.length) { document.getElementById('import-msg').textContent = 'No new clients found in that file' + (res.capped ? '. The free plan is full.' : '.'); return; }
+          ui.pendingImport = res; renderData();
+        } catch (err) {
+          document.getElementById('import-msg').textContent = "Couldn't read client names from that file. Save it as CSV with a header row that has a name column (for example First Name and Last Name).";
+        }
+      };
+      rd.readAsText(t.files[0]);
+      return;
+    }
     if (t.id !== 'restore-file' || !t.files[0]) return;
     var reader = new FileReader();
     reader.onload = function () {
@@ -731,5 +799,6 @@
   if (!storageOK) showSave();
   route();
   autoInit();
+  if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) navigator.serviceWorker.register('sw.js').catch(function () {});
   revalidateLicense();
 })();
