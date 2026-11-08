@@ -153,3 +153,18 @@ h2.sec { font-size: 20px; font-weight: 700; display: flex; justify-content: spac
   .paper { border: 0; border-radius: 0; padding: 0; break-after: page; }
   .paper:last-child { break-after: auto; }
 }
+
+/* amendment history */
+.hint.amend:empty { display: none; }
+.hint.amend { margin: 0 0 12px; }
+details.history { margin: 18px 0 0; border: 1px solid var(--line); border-radius: 10px; padding: 0 14px; }
+details.history summary { cursor: pointer; padding: 12px 0; font-weight: 600; }
+.version { border-top: 1px solid var(--line); padding: 12px 0; }
+.version .vh { font-size: 14px; }
+.version .vmeta { font-size: 13px; color: var(--ink-2); margin: 2px 0 8px; overflow-wrap: anywhere; }
+.version .psoap { display: grid; gap: 6px; }
+.version .psoap div { display: grid; grid-template-columns: 18px minmax(0, 1fr); gap: 8px; }
+.version .psoap p { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+.paper .precord { font-size: 11px; color: #444; padding-top: 14px; }
+.paper .phistory { margin-top: 10px; font-size: 11px; color: #333; }
+.paper .phistory .version { border-top: 1px dashed #999; padding: 8px 0; }

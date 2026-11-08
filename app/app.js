@@ -171,6 +171,7 @@
       if (n && isBlank(n)) { db.notes = db.notes.filter(function (x) { return x !== n; }); save(); }
       openNoteId = null;
     }
+    if (!(parts[0] === 'note' && parts[1] === edit.id && !parts[2])) edit = { id: null, base: null, saved: false };
     document.title = 'Tablenote';
     if (parts[0] === 'client' && parts[1] === 'new') renderNewClient();
     else if (parts[0] === 'client' && client(parts[1])) parts[2] === 'print' ? renderPrintClient(parts[1]) : renderClient(parts[1]);
@@ -295,11 +296,13 @@
   function renderNote(id) {
     var n = note(id), c = client(n.clientId);
     openNoteId = id;
+    if (edit.id !== id) startEdit(n);
     var prev = notesFor(c.id).filter(function (x) { return x.id !== id && x.date <= n.date && x.marks && x.marks.length; })[0];
     var zeroTen = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
     var h = '<a class="back" href="#/client/' + c.id + '">← ' + esc(c.name) + '</a>';
     h += '<div class="page-head"><div><h1>SOAP note</h1><p class="sub">' + esc(c.name) + (n.example ? ' · <span class="tag">Example</span>' : '') + '</p></div></div>';
     if (c.contra) h += '<div class="caution"><span class="label">Precautions</span>' + esc(c.contra) + '</div>';
+    h += '<p class="hint amend" id="amend-state" role="status">' + amendLine(n) + '</p>';
     h += '<div class="sheet">';
     h += '<div class="sheet-head">' +
       '<label class="field wide"><span class="label">Date</span><input type="date" data-field="date" id="nf-date" value="' + esc(n.date) + '"></label>' +
@@ -319,6 +322,7 @@
       '<ul class="marks" id="marks"></ul>' +
       (prev && !(n.marks && n.marks.length) ? '<div><button class="btn small quiet" data-action="copy-marks" data-from="' + prev.id + '">Copy marks from ' + fmtDate(prev.date, true) + '</button></div>' : '') +
       '</div></div>';
+    if ((n.history || []).length) h += '<details class="history"><summary>Earlier versions (' + n.history.length + ')</summary>' + n.history.map(versionHTML).join('') + '</details>';
     h += '<div class="actions"><div class="row"><a class="btn" href="#/client/' + c.id + '">Done</a><a class="btn quiet" href="#/note/' + id + '/print">Print or save PDF</a></div>' +
       '<button class="btn small danger" data-action="delete-note" data-id="' + id + '">Delete note</button></div>';
     view.innerHTML = h;
@@ -348,7 +352,37 @@
     }).join('') : '<li style="color:var(--ink-2)">No marks yet.</li>';
   }
 
-  function touch(n) { n.updatedAt = Date.now(); saveSoon(); }
+  // Amendment history: edits made after the grace period never overwrite the record silently.
+  // The first change in each later editing session saves the earlier version, with time and author.
+  var AMEND_GRACE = 24 * 3600e3;
+  var NOTE_FIELDS = ['date', 'duration', 'modality', 'pressure', 'painBefore', 'painAfter', 's', 'o', 'a', 'p', 'marks'];
+  var edit = { id: null, base: null, saved: false };
+  function snapshotOf(n) { var o = {}; NOTE_FIELDS.forEach(function (k) { o[k] = k === 'marks' ? (n.marks || []).map(function (m) { return Object.assign({}, m); }) : n[k]; }); return o; }
+  function startEdit(n) { edit = { id: n.id, base: snapshotOf(n), baseAt: n.updatedAt || n.createdAt || null, saved: false }; }
+  function amendable(n) { return !n.example && n.createdAt && (Date.now() - n.createdAt) > AMEND_GRACE; }
+  function touch(n) {
+    if (edit.id === n.id && !edit.saved && amendable(n)) {
+      n.history = n.history || [];
+      n.history.push({ savedAt: Date.now(), writtenAt: edit.baseAt, by: [db.settings.therapist, db.settings.credential].filter(Boolean).join(', '), note: edit.base });
+      n.amendedAt = Date.now();
+      edit.saved = true;
+      var tag = document.getElementById('amend-state');
+      if (tag) tag.innerHTML = amendLine(n);
+    }
+    n.updatedAt = Date.now(); saveSoon();
+  }
+  function fmtTime(ms) { return ms ? new Date(ms).toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' }) : 'unknown time'; }
+  function amendLine(n) {
+    var k = (n.history || []).length;
+    if (!k) return amendable(n) ? 'Written ' + fmtTime(n.createdAt) + '. Changes from now on are kept as an amendment; the current version is saved first.' : '';
+    return '<b>Amended ' + plural(k, 'time') + '</b>, last on ' + fmtTime(n.amendedAt) + '. Every earlier version is kept below and on the printout.';
+  }
+  function versionHTML(v, i) {
+    var x = v.note, rows = SOAP.map(function (s) { return '<div><b>' + s.letter + '</b><p>' + (esc(x[s.k]) || '<i>blank</i>') + '</p></div>'; }).join('');
+    var meta = fmtDate(x.date) + ' · ' + x.duration + ' min · ' + esc(x.modality || '') + ' · pain ' + (x.painBefore != null ? x.painBefore : '?') + ' → ' + (x.painAfter != null ? x.painAfter : '?') +
+      ((x.marks || []).length ? ' · marks: ' + esc(BodyChart.describe(x.marks)) : '');
+    return '<div class="version"><div class="vh"><b>Version ' + (i + 1) + '</b> written ' + esc(fmtTime(v.writtenAt)) + (v.by ? ' by ' + esc(v.by) : '') + '; replaced ' + esc(fmtTime(v.savedAt)) + '</div><div class="vmeta">' + meta + '</div><div class="psoap">' + rows + '</div></div>';
+  }
 
   function autosize(t) { t.style.height = 'auto'; t.style.height = Math.max(84, t.scrollHeight + 2) + 'px'; }
 
@@ -365,6 +399,8 @@
     if (c.contra) h += '<div class="pcaution"><b>Precautions:</b> ' + esc(c.contra) + '</div>';
     h += '<div class="psoap">' + SOAP.map(function (s) { return '<div><b>' + s.letter + '</b><p>' + esc(n[s.k]) + '</p></div>'; }).join('') + '</div>';
     h += '<div class="pchart"><div class="pc" data-note="' + n.id + '"></div><ul class="pmarks">' + ((n.marks || []).length ? n.marks.map(function (m) { return '<li>' + BodyChart.glyphSVG(m.type) + esc(BodyChart.TYPES[m.type].label.split(' /')[0]) + ': ' + esc(m.region) + '</li>'; }).join('') : '<li>No marks recorded.</li>') + '</ul></div>';
+    h += '<div class="precord">Written ' + esc(fmtTime(n.createdAt)) + ((n.history || []).length ? '. Amended ' + plural(n.history.length, 'time') + ', last ' + esc(fmtTime(n.amendedAt)) + '. Earlier versions follow.' : '. Not amended.') + '</div>';
+    if ((n.history || []).length) h += '<div class="phistory"><span class="label" style="color:#555">Amendment history</span>' + n.history.map(versionHTML).join('') + '</div>';
     h += '<div class="sign"><div>Therapist signature</div><div>Date</div></div></article>';
     return h;
   }
@@ -429,10 +465,11 @@
   }
   function csvCell(v) { v = v == null ? '' : String(v); return /[",\n\r]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; }
   function exportCSV() {
-    var head = ['client', 'date', 'duration_min', 'modality', 'pressure_1to5', 'pain_before', 'pain_after', 'subjective', 'objective', 'assessment', 'plan', 'body_marks', 'precautions'];
+    var head = ['client', 'date', 'duration_min', 'modality', 'pressure_1to5', 'pain_before', 'pain_after', 'subjective', 'objective', 'assessment', 'plan', 'body_marks', 'precautions', 'written_at', 'amended_count', 'last_amended_at'];
     var rows = db.notes.slice().sort(function (a, b) { return a.date < b.date ? -1 : 1; }).map(function (n) {
       var c = client(n.clientId) || {};
-      return [c.name, n.date, n.duration, n.modality, n.pressure, n.painBefore, n.painAfter, n.s, n.o, n.a, n.p, BodyChart.describe(n.marks), c.contra];
+      return [c.name, n.date, n.duration, n.modality, n.pressure, n.painBefore, n.painAfter, n.s, n.o, n.a, n.p, BodyChart.describe(n.marks), c.contra,
+        n.createdAt ? new Date(n.createdAt).toISOString() : '', (n.history || []).length, n.amendedAt ? new Date(n.amendedAt).toISOString() : ''];
     });
     var text = '﻿' + [head].concat(rows).map(function (r) { return r.map(csvCell).join(','); }).join('\r\n');
     download('tablenote-notes-' + today() + '.csv', 'text/csv;charset=utf-8', text);
